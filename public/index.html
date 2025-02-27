@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <title>Document</title>
+</head>
+<body>
+    <header>
+        <h1>Google Play Store Top Apps</h1>
+    </header>
+    <main>
+        <form action="/download" method="post" id="appForm">
+            <section class="input-section">
+                <label for="category">Category</label>
+                <select name="categories" id="category">
+                </select>
+            </section>
+    
+            <section class="input-section">
+                <label for="collection">Collection</label>
+                <select name="collection" id="collection">
+                    <option value="TOP_FREE">Top Free</option>
+                    <option value="TOP_PAID">Top Paid</option>
+                    <option value="GROSSING">Grossing</option>
+                </select>
+            </section>
+
+            <section class="input-section">
+                <label for="numapps">Number of Apps</label>
+                <input type="number" name="numapps" id="numapps" value="100">
+            </section>
+
+            <input type="submit" value="Download" id="submit-btn">
+        </form>
+    </main>
+    <footer>
+
+    </footer>
+    <script src="index.js"></script>
+</body>
+</html>
