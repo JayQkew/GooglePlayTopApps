@@ -55,12 +55,138 @@ const allCategories = [
     'FAMILY'
   ];
 
-const languageCodes = [
-    "aa", "ab", "af", "ak", "sq", "am", "an", "ar", "hy", "as", "av", "ae", "ay", "az", "bm", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "ch", "ce", "ny", "zh", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "de", "ga", "gl", "gv", "ka", "de", "el", "gu", "ht", "ha", "he", "hi", "ho", "hu", "hy", "is", "ia", "id", "iu", "ga", "it", "ja", "jw", "kn", "km", "ko", "la", "lv", "lt", "lb", "mk", "ml", "mr", "mi", "mr", "ms", "mt", "my", "ne", "no", "pl", "ps", "pt", "qu", "ro", "ru", "sr", "si", "sk", "sl", "es", "su", "sw", "sv", "tl", "tg", "ta", "te", "th", "tr", "uk", "ur", "vi", "cy", "xh", "yi", "zu"
+const languages = [
+    { code: "en", name: "English" },
+    { code: "zh", name: "Chinese" },
+    { code: "aa", name: "Afar" },
+    { code: "ab", name: "Abkhazian" },
+    { code: "af", name: "Afrikaans" },
+    { code: "ak", name: "Akan" },
+    { code: "sq", name: "Albanian" },
+    { code: "am", name: "Amharic" },
+    { code: "ar", name: "Arabic" },
+    { code: "hy", name: "Armenian" },
+    { code: "as", name: "Assamese" },
+    { code: "az", name: "Azerbaijani" },
+    { code: "bm", name: "Bambara" },
+    { code: "eu", name: "Basque" },
+    { code: "be", name: "Belarusian" },
+    { code: "bn", name: "Bengali" },
+    { code: "bs", name: "Bosnian" },
+    { code: "bg", name: "Bulgarian" },
+    { code: "my", name: "Burmese" },
+    { code: "ca", name: "Catalan" },
+    { code: "hr", name: "Croatian" },
+    { code: "cs", name: "Czech" },
+    { code: "da", name: "Danish" },
+    { code: "nl", name: "Dutch" },
+    { code: "eo", name: "Esperanto" },
+    { code: "et", name: "Estonian" },
+    { code: "fi", name: "Finnish" },
+    { code: "fr", name: "French" },
+    { code: "de", name: "German" },
+    { code: "el", name: "Greek" },
+    { code: "gu", name: "Gujarati" },
+    { code: "he", name: "Hebrew" },
+    { code: "hi", name: "Hindi" },
+    { code: "hu", name: "Hungarian" },
+    { code: "is", name: "Icelandic" },
+    { code: "id", name: "Indonesian" },
+    { code: "it", name: "Italian" },
+    { code: "ja", name: "Japanese" },
+    { code: "kn", name: "Kannada" },
+    { code: "ko", name: "Korean" },
+    { code: "lv", name: "Latvian" },
+    { code: "lt", name: "Lithuanian" },
+    { code: "mk", name: "Macedonian" },
+    { code: "ml", name: "Malayalam" },
+    { code: "ms", name: "Malay" },
+    { code: "mr", name: "Marathi" },
+    { code: "ne", name: "Nepali" },
+    { code: "no", name: "Norwegian" },
+    { code: "fa", name: "Persian" },
+    { code: "pl", name: "Polish" },
+    { code: "pt", name: "Portuguese" },
+    { code: "ro", name: "Romanian" },
+    { code: "ru", name: "Russian" },
+    { code: "sr", name: "Serbian" },
+    { code: "sk", name: "Slovak" },
+    { code: "sl", name: "Slovenian" },
+    { code: "es", name: "Spanish" },
+    { code: "sv", name: "Swedish" },
+    { code: "ta", name: "Tamil" },
+    { code: "te", name: "Telugu" },
+    { code: "th", name: "Thai" },
+    { code: "tr", name: "Turkish" },
+    { code: "uk", name: "Ukrainian" },
+    { code: "ur", name: "Urdu" },
+    { code: "vi", name: "Vietnamese" },
+    { code: "cy", name: "Welsh" },
+    { code: "xh", name: "Xhosa" },
+    { code: "yi", name: "Yiddish" },
+    { code: "zu", name: "Zulu" }
 ];
 
-const countryCodes = [
-    "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TZ", "UA", "UG", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW"
+const countries = [
+    { code: "US", name: "United States" },
+    { code: "GB", name: "United Kingdom" },
+    { code: "CA", name: "Canada" },
+    { code: "AU", name: "Australia" },
+    { code: "IN", name: "India" },
+    { code: "ZA", name: "South Africa" },
+    { code: "FR", name: "France" },
+    { code: "DE", name: "Germany" },
+    { code: "IT", name: "Italy" },
+    { code: "ES", name: "Spain" },
+    { code: "BR", name: "Brazil" },
+    { code: "MX", name: "Mexico" },
+    { code: "RU", name: "Russia" },
+    { code: "CN", name: "China" },
+    { code: "JP", name: "Japan" },
+    { code: "KR", name: "South Korea" },
+    { code: "NL", name: "Netherlands" },
+    { code: "SE", name: "Sweden" },
+    { code: "NO", name: "Norway" },
+    { code: "FI", name: "Finland" },
+    { code: "DK", name: "Denmark" },
+    { code: "IE", name: "Ireland" },
+    { code: "NZ", name: "New Zealand" },
+    { code: "SG", name: "Singapore" },
+    { code: "MY", name: "Malaysia" },
+    { code: "PH", name: "Philippines" },
+    { code: "TH", name: "Thailand" },
+    { code: "VN", name: "Vietnam" },
+    { code: "ID", name: "Indonesia" },
+    { code: "PK", name: "Pakistan" },
+    { code: "SA", name: "Saudi Arabia" },
+    { code: "AE", name: "United Arab Emirates" },
+    { code: "EG", name: "Egypt" },
+    { code: "NG", name: "Nigeria" },
+    { code: "KE", name: "Kenya" },
+    { code: "AR", name: "Argentina" },
+    { code: "CL", name: "Chile" },
+    { code: "CO", name: "Colombia" },
+    { code: "PE", name: "Peru" },
+    { code: "VE", name: "Venezuela" },
+    { code: "CH", name: "Switzerland" },
+    { code: "BE", name: "Belgium" },
+    { code: "AT", name: "Austria" },
+    { code: "PT", name: "Portugal" },
+    { code: "GR", name: "Greece" },
+    { code: "PL", name: "Poland" },
+    { code: "CZ", name: "Czech Republic" },
+    { code: "HU", name: "Hungary" },
+    { code: "RO", name: "Romania" },
+    { code: "BG", name: "Bulgaria" },
+    { code: "TR", name: "Turkey" },
+    { code: "UA", name: "Ukraine" },
+    { code: "IL", name: "Israel" },
+    { code: "HK", name: "Hong Kong" },
+    { code: "TW", name: "Taiwan" },
+    { code: "BD", name: "Bangladesh" },
+    { code: "LK", name: "Sri Lanka" },
+    { code: "NP", name: "Nepal" },
+    { code: "MM", name: "Myanmar" }
 ];
 
 
@@ -116,7 +242,33 @@ function createAllCategories(){
         `
 
         categorySelect.innerHTML += option;
+    });
+}
+
+function createAllLanguages(){
+    const langugeSelect = document.getElementById('language');
+
+    languages.map(language => {
+        const display = language.name;
+
+        const option = `
+            <option value="${language.code}">${display}</option>
+        `
+
+        langugeSelect.innerHTML += option;
     })
+}
+
+function createAllCountries(){
+    const countrySelect = document.getElementById('country');
+
+    countries.map(country => {
+        const option = `
+            <option value="${country.code}">${country.name}</option>
+        `
+
+        countrySelect.innerHTML += option;
+    })    
 }
 
 function getFormData(){
@@ -130,3 +282,5 @@ function getFormData(){
 }
 
 createAllCategories();
+createAllLanguages();
+createAllCountries();

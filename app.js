@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import gplay from "google-play-scraper";
 import xl from 'xlsx';
-import fs from 'fs';
 
 
 const app = express();
@@ -14,14 +13,16 @@ app.use(express.static('public'));
 
 app.post("/submit", async (req, res) => {
     try{
-        const {category, collection, numApps} = req.body;
+        const { category, collection, numApps, language, country } = req.body;
 
         console.log("Recieved form data: ", req.body);
 
         const topApps = await gplay.list({
             category: gplay.category[category],
             collection: gplay.collection[collection],
-            num: parseInt(numApps)
+            num: parseInt(numApps),
+            lang: language,
+            country: country
         });
 
         const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId)));
