@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import gplay from "google-play-scraper";
 import xl from 'xlsx';
+import path from 'path';
 
 
 const app = express();
@@ -25,30 +26,9 @@ app.post("/submit", async (req, res) => {
             country: country
         });
 
-        const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId)));
+        const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId, language, country)));
 
-        const excelData = topApps.map((app, i) => 
-            {
-                const date = new Intl.DateTimeFormat("en-US", { 
-                    year: "numeric", 
-                    month: "2-digit", 
-                    day: "2-digit"
-                }).format(new Date(appDetails[i].updated));
-
-                return {
-                    Title: app.title,
-                    URL: app.url,
-                    Installs: appDetails[i].installs,
-                    Version: appDetails[i].version,
-                    AndroidVersion: appDetails[i].androidVersion,
-                    Updated: `'${date}`,
-                }
-            }
-        );
-
-        const filePath = generateExcel(excelData);
-
-        res.json({ success: true, downloadLink: filePath });
+        res.json({ success: true, appData: appDetails });
 
     } catch (error) {
         console.error("Error fetching apps: ", error);
@@ -57,8 +37,57 @@ app.post("/submit", async (req, res) => {
     }
 });
 
-async function getAppDetail(appID) {
-    return gplay.app({ appId: appID });
+app.post("/download", async (req, res) => {
+    try {
+        const { category, collection, numApps, language, country } = req.body;
+        console.log("Received form data:", req.body);
+
+        const topApps = await gplay.list({
+            category: gplay.category[category],
+            collection: gplay.collection[collection],
+            num: parseInt(numApps),
+            lang: language,
+            country: country
+        });
+
+        const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId, language, country)));
+
+        const excelData = topApps.map((app, i) => ({
+            Title: app.title,
+            URL: app.url,
+            Installs: appDetails[i].installs,
+            Version: appDetails[i].version,
+            AndroidVersion: appDetails[i].androidVersion,
+            Updated: appDetails[i].updated,
+            appID: app.appId
+        }));
+
+        const excelBuffer = generateExcel(excelData);
+
+        const fileName = `top_apps_${Date.now()}.xlsx`;
+        const filePath = path.join(__dirname, "downloads", fileName);
+        fs.writeFileSync(filePath, excelBuffer);
+
+        // Set response headers to trigger a download
+        res.json({
+            success: true,
+            message: "File generated successfully",
+            appData: appDetails,
+            downloadLink: `/download-file/${fileName}`
+        });
+
+    } catch (error) {
+        console.error("Error generating Excel file:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
+async function getAppDetail(appID, lang, country) {
+    return gplay.app({ 
+        appId: appID,
+        lang: lang,
+        country: country
+     });
 }
 
 function generateExcel(data) {
@@ -84,42 +113,6 @@ function generateExcel(data) {
 
     return xl.write(wb, {bookType: 'xlsx', type: 'buffer'});    
 }
-
-app.post("/download", async (req, res) => {
-    try {
-        const { category, collection, numApps } = req.body;
-        console.log("Received form data:", req.body);
-
-        const topApps = await gplay.list({
-            category: gplay.category[category],
-            collection: gplay.collection[collection],
-            num: parseInt(numApps)
-        });
-
-        const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId)));
-
-        const excelData = topApps.map((app, i) => ({
-            Title: app.title,
-            URL: app.url,
-            Installs: appDetails[i].installs,
-            Version: appDetails[i].version,
-            AndroidVersion: appDetails[i].androidVersion,
-            Updated: appDetails[i].updated
-        }));
-
-        const excelBuffer = generateExcel(excelData);
-
-        // Set response headers to trigger a download
-        res.setHeader('Content-Disposition', `attachment; filename="top_apps_${Date.now()}.xlsx"`);
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.send(excelBuffer);
-
-    } catch (error) {
-        console.error("Error generating Excel file:", error);
-        res.status(500).json({ success: false, message: "Server error" });
-    }
-});
-
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

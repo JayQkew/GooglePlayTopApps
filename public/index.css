@@ -65,9 +65,33 @@ select{
     border-radius: 100vw;
 }
 
-#submit-btn{
+.btn{
+    font-size: 1rem;
     border-radius: 100vw;
+    background-color: lightgray;
     padding: 0.25rem;
     width: 7.5rem;
     cursor: pointer;
+}
+.btn:hover{
+    background-color: darkgray;
+}
+
+.download{
+    font-size: 1rem;
+    text-decoration: none; 
+    color: white; 
+    background-color: lightskyblue; 
+    border-radius: 100vw; 
+    width: 7.5rem;
+    padding: 0.25rem;
+    display: inline-block;
+    cursor: pointer;
+    text-align: center;
+}
+.download:visited{
+    color: black;
+}
+.download:hover{
+    background-color: rgb(68, 130, 209);
 }
