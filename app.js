@@ -29,7 +29,10 @@ app.post("/submit", async (req, res) => {
         const excelData = topApps.map((app, i) => ({
             Title: app.title,
             URL: app.url,
-            Installs: appDetails[i].installs
+            Installs: appDetails[i].installs,
+            Version: appDetails[i].version,
+            AndroidVersion: appDetails[i].androidVersion,
+            Updated: appDetails[i].updated
         }));
 
         const filePath = generateExcel(excelData);
@@ -71,7 +74,10 @@ app.post("/download", async (req, res) => {
         const excelData = topApps.map((app, i) => ({
             Title: app.title,
             URL: app.url,
-            Installs: appDetails[i].installs
+            Installs: appDetails[i].installs,
+            Version: appDetails[i].version,
+            AndroidVersion: appDetails[i].androidVersion,
+            Updated: appDetails[i].updated
         }));
 
         const excelBuffer = generateExcel(excelData);
