@@ -17,7 +17,19 @@ header{
     justify-content: center;
     align-items: center;
     text-align: center;
+    flex-direction: column;
     margin: 2rem;
+}
+
+nav ul{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    list-style: none;
+    gap: 1rem;
+    padding: 0rem;
+    margin-block: 1rem;
 }
 
 main{
