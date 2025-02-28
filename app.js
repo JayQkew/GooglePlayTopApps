@@ -26,14 +26,24 @@ app.post("/submit", async (req, res) => {
 
         const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId)));
 
-        const excelData = topApps.map((app, i) => ({
-            Title: app.title,
-            URL: app.url,
-            Installs: appDetails[i].installs,
-            Version: appDetails[i].version,
-            AndroidVersion: appDetails[i].androidVersion,
-            Updated: appDetails[i].updated
-        }));
+        const excelData = topApps.map((app, i) => 
+            {
+                const date = new Intl.DateTimeFormat("en-US", { 
+                    year: "numeric", 
+                    month: "2-digit", 
+                    day: "2-digit"
+                }).format(new Date(appDetails[i].updated));
+
+                return {
+                    Title: app.title,
+                    URL: app.url,
+                    Installs: appDetails[i].installs,
+                    Version: appDetails[i].version,
+                    AndroidVersion: appDetails[i].androidVersion,
+                    Updated: `'${date}`,
+                }
+            }
+        );
 
         const filePath = generateExcel(excelData);
 
@@ -52,6 +62,22 @@ async function getAppDetail(appID) {
 
 function generateExcel(data) {
     const ws = xl.utils.json_to_sheet(data);
+
+    const range = xl.utils.decode_range(ws['!ref']);
+    for (let row = range.s.r + 1; row <= range.e.r; row++) { 
+        const cellRef = xl.utils.encode_cell({ r: row, c: 5 });
+        if (ws[cellRef] && typeof ws[cellRef].v === "number") {
+            const unixTimestamp = ws[cellRef].v;
+            
+            // Convert to Excel's date format
+            const excelDate = (unixTimestamp / 86400000) + 25569; 
+            
+            ws[cellRef].v = excelDate;  // Update cell value
+            ws[cellRef].t = "n";        // Set cell type to number (date format in Excel)
+            ws[cellRef].z = "yyyy-mm-dd"; // Apply Excel date format
+        }
+    }
+
     const wb = xl.utils.book_new();
     xl.utils.book_append_sheet(wb, ws, 'Top Apps');
 
