@@ -204,30 +204,26 @@ async function submitForm() {
             body: JSON.stringify(formData)
         });
 
-        
         if(!res.ok){
             throw new Error("Failed to download file");
         }
-        
-        const data = await res.json();
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+
         const downloadBtns = document.querySelectorAll('.download');
 
-        if(data.success && data.downloadLink){
-            if(downloadBtns.length > 0){
-                downloadBtns[0].href = url;
-                downloadBtns[0].download = `top_apps_${Date.now()}.xlsx`;
-            } else{
-                const btnContainer = document.getElementById('btn-container')
-                const a = document.createElement('a');
-                a.classList.add('download');
-                a.href = data.downloadLink;
-                a.download = `top_apps_${Date.now()}.xlsx`;
-                a.textContent = 'Download';
-                btnContainer.appendChild(a);
-            }
-        }else{
-            console.error("File generation failed:", data.message);
-            alert("Failed to generate the file. Please try again.");
+        if(downloadBtns.length > 0){
+            downloadBtns[0].href = url;
+            downloadBtns[0].download = `top_apps_${Date.now()}.xlsx`;
+        } else{
+            const btnContainer = document.getElementById('btn-container')
+            const a = document.createElement('a');
+            a.classList.add('download');
+            a.href = url;
+            a.download = `top_apps_${Date.now()}.xlsx`;
+            a.textContent = 'Download'
+            btnContainer.appendChild(a);
         }
 
         console.log("Download started successfully")

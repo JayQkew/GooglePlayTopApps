@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import gplay from "google-play-scraper";
 import xl from 'xlsx';
-import path from 'path';
 
 
 const app = express();
@@ -54,27 +53,20 @@ app.post("/download", async (req, res) => {
 
         const excelData = topApps.map((app, i) => ({
             Title: app.title,
-            URL: app.url,
-            Installs: appDetails[i].installs,
+            appID: app.appId,
             Version: appDetails[i].version,
-            AndroidVersion: appDetails[i].androidVersion,
             Updated: appDetails[i].updated,
-            appID: app.appId
+            Installs: appDetails[i].installs,
+            AndroidVersion: appDetails[i].androidVersion,
+            URL: app.url
         }));
 
         const excelBuffer = generateExcel(excelData);
 
-        const fileName = `top_apps_${Date.now()}.xlsx`;
-        const filePath = path.join(__dirname, "downloads", fileName);
-        fs.writeFileSync(filePath, excelBuffer);
-
         // Set response headers to trigger a download
-        res.json({
-            success: true,
-            message: "File generated successfully",
-            appData: appDetails,
-            downloadLink: `/download-file/${fileName}`
-        });
+        res.setHeader('Content-Disposition', `attachment; filename="top_apps_${Date.now()}.xlsx"`);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.send(excelBuffer);
 
     } catch (error) {
         console.error("Error generating Excel file:", error);
@@ -95,7 +87,7 @@ function generateExcel(data) {
 
     const range = xl.utils.decode_range(ws['!ref']);
     for (let row = range.s.r + 1; row <= range.e.r; row++) { 
-        const cellRef = xl.utils.encode_cell({ r: row, c: 5 });
+        const cellRef = xl.utils.encode_cell({ r: row, c: 3 });
         if (ws[cellRef] && typeof ws[cellRef].v === "number") {
             const unixTimestamp = ws[cellRef].v;
             
