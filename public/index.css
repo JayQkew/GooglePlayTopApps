@@ -1,9 +1,9 @@
 .download{
     font-size: 1rem;
-    text-decoration: none; 
-    color: white; 
-    background-color: lightskyblue; 
-    border-radius: 100vw; 
+    text-decoration: none;
+    color: white;
+    background-color: lightskyblue;
+    border-radius: 100vw;
     width: 7.5rem;
     padding: 0.25rem;
     display: inline-block;
@@ -16,3 +16,47 @@
 .download:hover{
     background-color: rgb(68, 130, 209);
 }
+
+.table-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1rem;
+    padding: 1rem;
+}
+
+table{
+    border-collapse: collapse;
+    border: solid 1px rgb(228, 228, 228);
+    table-layout: fixed;
+    border-radius: 1rem;
+    width: 100%;
+}
+
+tbody tr:nth-child(odd){
+    background-color: rgb(228, 228, 228);
+}
+
+th{
+    text-align: left;
+    padding: 0.5rem;
+}
+
+td{
+    /* width: 7.5rem; */
+    word-wrap: break-word;
+    padding: 0.5rem;
+}
+
+#update-header{
+    cursor: pointer;
+}
+
+/* thead{
+    border-bottom: solid 1px black;
+}
+
+td{
+    border-top: solid 1px black;
+    border-right: solid 1px black;
+} */

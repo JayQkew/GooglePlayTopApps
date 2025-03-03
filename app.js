@@ -49,6 +49,28 @@ app.post("/topAppsFile", async (req, res) => {
     }
 });
 
+app.post("/topApps", async (req, res) => {
+    try {
+        const { category, collection, numApps, language, country } = req.body;
+        console.log("Received form data:", req.body);
+
+        const topApps = await gplay.list(
+            {
+                category: gplay.category[category],
+                collection: gplay.collection[collection],
+                num: parseInt(numApps),
+                lang: language,
+                country: country,
+                fullDetail: 'true'
+            }
+        );
+
+        res.json(topApps);
+    } catch (error) {
+        
+    }
+})
+
 app.post('/search', async (req, res) => {
     try{
         const {searchValue, lang, country} = req.body;
