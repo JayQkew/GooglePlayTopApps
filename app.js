@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-app.post("/topApps", async (req, res) => {
+app.post("/topAppsFile", async (req, res) => {
     try {
         const { category, collection, numApps, language, country } = req.body;
         console.log("Received form data:", req.body);
@@ -57,6 +57,7 @@ app.post('/search', async (req, res) => {
         const searchResults = await gplay.search(
             {
                 term: searchValue,
+                num: 20,
                 lang: lang,
                 country: country,
                 fullDetail: 'true'

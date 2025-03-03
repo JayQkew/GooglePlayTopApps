@@ -191,14 +191,14 @@ export const countries = [
 
 document.getElementById('appForm').addEventListener('submit', function(event) {
     event.preventDefault();
-    submitForm();
+    getExcelFile();
 });
 
-async function submitForm() {
+async function getExcelFile() {
     const formData = getFormData();
 
     try {
-        const res = await fetch("/topApps", {
+        const res = await fetch("/topAppsFile", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData)

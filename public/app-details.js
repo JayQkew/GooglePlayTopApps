@@ -161,6 +161,7 @@ async function submitSearch(){
         const appDetailContainer = document.querySelector('.app-detail-container');
         searchResult.map(app => {
             appDetailContainer.innerHTML += createAppDetailElement(app);
+            console.log(app.title);
         })
         // pop all the results here
 
