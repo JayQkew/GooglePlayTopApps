@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-app.post("/download", async (req, res) => {
+app.post("/topApps", async (req, res) => {
     try {
         const { category, collection, numApps, language, country } = req.body;
         console.log("Received form data:", req.body);

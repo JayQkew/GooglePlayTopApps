@@ -198,7 +198,7 @@ async function submitForm() {
     const formData = getFormData();
 
     try {
-        const res = await fetch("/download", {
+        const res = await fetch("/topApps", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData)
