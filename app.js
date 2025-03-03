@@ -11,43 +11,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-app.post("/submit", async (req, res) => {
-    try{
-        const { category, collection, numApps, language, country } = req.body;
-
-        console.log("Recieved form data: ", req.body);
-
-        const topApps = await gplay.list({
-            category: gplay.category[category],
-            collection: gplay.collection[collection],
-            num: parseInt(numApps),
-            lang: language,
-            country: country
-        });
-
-        const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId, language, country)));
-
-        res.json({ success: true, appData: appDetails });
-
-    } catch (error) {
-        console.error("Error fetching apps: ", error);
-        console.log(req.body)
-        res.status(500).json({ success: false, message: "Server error",  body: req.body });
-    }
-});
-
 app.post("/download", async (req, res) => {
     try {
         const { category, collection, numApps, language, country } = req.body;
         console.log("Received form data:", req.body);
 
-        const topApps = await gplay.list({
-            category: gplay.category[category],
-            collection: gplay.collection[collection],
-            num: parseInt(numApps),
-            lang: language,
-            country: country
-        });
+        const topApps = await gplay.list(
+            {
+                category: gplay.category[category],
+                collection: gplay.collection[collection],
+                num: parseInt(numApps),
+                lang: language,
+                country: country
+            }
+        );
 
         const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId, language, country)));
 
@@ -73,6 +50,28 @@ app.post("/download", async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 });
+
+app.post('/search', async (req, res) => {
+    try{
+        const {searchValue, num, lang, country} = req.body;
+        console.log("Searching: "+ searchValue);
+
+        const searchResults = await gplay.search(
+            {
+                term: searchValue,
+                num: num,
+                lang: lang,
+                country: country,
+                fullDetail: 'true'
+            }
+        );
+
+        console.log(searchResults);
+    } catch (error){
+        console.log('Error during search: ', error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+})
 
 async function getAppDetail(appID, lang, country) {
     return gplay.app({ 

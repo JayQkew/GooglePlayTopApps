@@ -17,10 +17,29 @@
         </nav>
     </header>
     <main>
-        <input type="search" name="app-details" id="app-search-bar" placeholder="Search">
+        <form id="search-form">
+            <input type="search" name="app-details" id="app-search-bar" placeholder="Search">
+    
+            <section class="input-section">
+                <label for="language">Language</label>
+                <select name="language" id="language"></select>
+            </section>
+    
+            <section class="input-section">
+                <label for="country">Country</label>
+                <select name="country" id="country"></select>
+            </section>
+    
+            <section class="input-section">
+                <label for="numapps">Number of Apps</label>
+                <input type="number" name="numapps" id="numapps" value="5" max="200" min="1">
+            </section>
+        </form>
+
     </main>
     <footer>
 
     </footer>
+    <script type="module" src="app-details.js"></script>
 </body>
 </html>

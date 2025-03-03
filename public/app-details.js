@@ -1,60 +1,3 @@
-const categories = [
-    'APPLICATION',
-    'ANDROID_WEAR',
-    'ART_AND_DESIGN',
-    'AUTO_AND_VEHICLES',
-    'BEAUTY',
-    'BOOKS_AND_REFERENCE',
-    'BUSINESS',
-    'COMICS',
-    'COMMUNICATION',
-    'DATING',
-    'EDUCATION',
-    'ENTERTAINMENT',
-    'EVENTS',
-    'FINANCE',
-    'FOOD_AND_DRINK',
-    'HEALTH_AND_FITNESS',
-    'HOUSE_AND_HOME',
-    'LIBRARIES_AND_DEMO',
-    'LIFESTYLE',
-    'MAPS_AND_NAVIGATION',
-    'MEDICAL',
-    'MUSIC_AND_AUDIO',
-    'NEWS_AND_MAGAZINES',
-    'PARENTING',
-    'PERSONALIZATION',
-    'PHOTOGRAPHY',
-    'PRODUCTIVITY',
-    'SHOPPING',
-    'SOCIAL',
-    'SPORTS',
-    'TOOLS',
-    'TRAVEL_AND_LOCAL',
-    'VIDEO_PLAYERS',
-    'WATCH_FACE',
-    'WEATHER',
-    'GAME',
-    'GAME_ACTION',
-    'GAME_ADVENTURE',
-    'GAME_ARCADE',
-    'GAME_BOARD',
-    'GAME_CARD',
-    'GAME_CASINO',
-    'GAME_CASUAL',
-    'GAME_EDUCATIONAL',
-    'GAME_MUSIC',
-    'GAME_PUZZLE',
-    'GAME_RACING',
-    'GAME_ROLE_PLAYING',
-    'GAME_SIMULATION',
-    'GAME_SPORTS',
-    'GAME_STRATEGY',
-    'GAME_TRIVIA',
-    'GAME_WORD',
-    'FAMILY'
-];
-
 export const languages = [
     { code: "en", name: "English" },
     { code: "zh", name: "Chinese" },
@@ -189,65 +132,41 @@ export const countries = [
     { code: "MM", name: "Myanmar" }
 ];
 
-document.getElementById('appForm').addEventListener('submit', function(event) {
+const appSearchBar = document.getElementById('app-search-bar');
+
+appSearchBar.addEventListener('search', function(event) {
     event.preventDefault();
-    submitForm();
-});
+    submitSearch();
+})
 
-async function submitForm() {
-    const formData = getFormData();
+async function submitSearch(){
+    const searchData = getSearchData();
 
-    try {
-        const res = await fetch("/download", {
-            method: "POST",
+    try{
+        const res = await fetch( '/search',{
+            method: 'POST',
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(searchData)
         });
 
         if(!res.ok){
-            throw new Error("Failed to download file");
+            throw new Error('Failed to search for app');
         }
 
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-
-        const downloadBtns = document.querySelectorAll('.download');
-
-        if(downloadBtns.length > 0){
-            downloadBtns[0].href = url;
-            downloadBtns[0].download = `top_apps_${Date.now()}.xlsx`;
-        } else{
-            const btnContainer = document.getElementById('btn-container')
-            const a = document.createElement('a');
-            a.classList.add('download');
-            a.href = url;
-            a.download = `top_apps_${Date.now()}.xlsx`;
-            a.textContent = 'Download'
-            btnContainer.appendChild(a);
-        }
-
-        console.log("Download started successfully")
-    } catch (error) {
-        console.error("Error submitting form:", error);
+        const searchResult = await res.json();
+        console.log('Search Results: '+ searchResult)
+    } catch (error){
+        console.log('Error searching for app: ', error);
         return null;
     }
 }
 
-function createAllCategories(){
-    const categorySelect = document.getElementById('category');
+function getSearchData(){
+    const numApps = document.getElementById('numapps').value;
+    const language = document.getElementById('language').value;
+    const country = document.getElementById('country').value;
 
-    categories.map(category => {
-        const display = category.replace(/_/g, ' ')
-            .toLowerCase()
-            .replace(/\b\w/g, (match) => match.toUpperCase())
-            .replace(/\bAnd\b/g, '&');
-
-        const option = `
-            <option value="${category}">${display}</option>
-        `
-
-        categorySelect.innerHTML += option;
-    });
+    return { numApps, language, country };
 }
 
 function createAllLanguages(){
@@ -276,18 +195,5 @@ function createAllCountries(){
     })    
 }
 
-function getFormData(){
-    const category = document.getElementById('category').value;
-    const collection = document.getElementById('collection').value;
-    const numApps = document.getElementById('numapps').value;
-    const language = document.getElementById('language').value;
-    const country = document.getElementById('country').value;
-
-    return { category, collection, numApps, language, country };
-}
-
-createAllCategories();
-createAllLanguages();
 createAllCountries();
-
-// export default AppData;
+createAllLanguages();
