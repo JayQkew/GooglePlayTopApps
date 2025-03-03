@@ -136,6 +136,8 @@ const appSearchBar = document.getElementById('app-search-bar');
 
 appSearchBar.addEventListener('search', function(event) {
     event.preventDefault();
+    const appDetailContainer = document.querySelector('.app-detail-container');
+    appDetailContainer.innerHTML = '';
     submitSearch();
 })
 
@@ -155,19 +157,82 @@ async function submitSearch(){
 
         const searchResult = await res.json();
         console.log('Search Results: '+ searchResult)
+
+        const appDetailContainer = document.querySelector('.app-detail-container');
+        searchResult.map(app => {
+            appDetailContainer.innerHTML += createAppDetailElement(app);
+        })
+        // pop all the results here
+
     } catch (error){
         console.log('Error searching for app: ', error);
         return null;
     }
 }
 
+function createAppDetailElement(appDetail){
+    const timeStamp = new Date(appDetail.updated);
+    const appUpdate = new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit'
+    }).format(timeStamp);
+
+    return `
+        <article class="app-detail">
+        <h1>${appDetail.title}</h1>
+        <section class="details-container-head">
+            <img src="${appDetail.icon}" alt="app icon" class="app-icon">
+            <div class="lvl-1-detail-info">
+                <p>Version: <span>${appDetail.version}</span></p>
+                <p>Updated: <span>${appUpdate}</span></p>
+                <p>App ID: <span>${appDetail.appId}</span></p>
+                <p>App Page: <span>${appDetail.url}</span></p>
+            </div>
+        </section>
+        <section class="details-container">
+            <h2>Installs</h2>
+            <p>installs: <span>${appDetail.installs}</span></p>
+            <p>minimum installs: <span>${appDetail.minInstalls}</span></p>
+            <p>maximum installs: <span>${appDetail.maxInstalls}</span></p>
+        </section>
+        <section class="details-container">
+            <h2>Ratings & Reviews</h2>
+            <p>score: <span>${appDetail.scoreText}</span></p>
+            <p>ratings: <span>${appDetail.ratings}</span></p>
+            <p>reviews: <span>${appDetail.rerviews}</span></p>
+        </section>
+        <section class="details-container">
+            <h2>Developer Details</h2>
+            <p>developer: <span>${appDetail.developer}</span></p>
+            <p>developer ID: <span>${appDetail.developerId}</span></p>
+            <p>developer email: <span>${appDetail.developerEmail}</span></p>
+            <p>developer website: <span>${appDetail.developerWebsite}</span></p>
+            <p>developer address: <span>${appDetail.developerAddress}</span></p>
+            <p>developer legal name: <span>${appDetail.developerLegalName}</span></p>
+            <p>developer legal email: <span>${appDetail.developerLegalEmail}</span></p>
+            <p>developer legal address: <span>${appDetail.developerLegalAddress}</span></p>
+            <p>developer legal phone number: <span>${appDetail.developerLegalPhoneNumber}</span></p>
+            <p>developer internal ID: <span>${appDetail.developerInternalID}</span></p>
+        </section>
+        <section class="details-container">
+            <h2>App Details</h2>
+            <p>version: <span>${appDetail.version}</span></p>
+            <p>updated: <span>${appUpdate}</span></p>
+            <p>recent changes: <span>${appDetail.recentChanges}</span></p>
+            <p>app ID: <span>${appDetail.appId}</span></p>
+            <p>app Page: <span>${appDetail.url}</span></p>
+        </section>
+    </article>
+    `
+}
+
 function getSearchData(){
     const searchValue = document.getElementById('app-search-bar').value;
-    const numApps = document.getElementById('numapps').value;
     const language = document.getElementById('language').value;
     const country = document.getElementById('country').value;
 
-    return { searchValue, numApps, language, country };
+    return { searchValue, language, country };
 }
 
 function createAllLanguages(){

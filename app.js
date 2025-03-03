@@ -51,13 +51,12 @@ app.post("/download", async (req, res) => {
 
 app.post('/search', async (req, res) => {
     try{
-        const {searchValue, num, lang, country} = req.body;
+        const {searchValue, lang, country} = req.body;
         console.log("Searching: "+ searchValue);
 
         const searchResults = await gplay.search(
             {
                 term: searchValue,
-                num: parseInt(num),
                 lang: lang,
                 country: country,
                 fullDetail: 'true'
