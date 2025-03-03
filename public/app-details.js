@@ -162,11 +162,12 @@ async function submitSearch(){
 }
 
 function getSearchData(){
+    const searchValue = document.getElementById('app-search-bar').value;
     const numApps = document.getElementById('numapps').value;
     const language = document.getElementById('language').value;
     const country = document.getElementById('country').value;
 
-    return { numApps, language, country };
+    return { searchValue, numApps, language, country };
 }
 
 function createAllLanguages(){

@@ -22,19 +22,17 @@ app.post("/download", async (req, res) => {
                 collection: gplay.collection[collection],
                 num: parseInt(numApps),
                 lang: language,
-                country: country
+                country: country,
+                fullDetail: 'true'
             }
         );
 
-        const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId, language, country)));
-
-        const excelData = topApps.map((app, i) => ({
+        const excelData = topApps.map(app => ({
             Title: app.title,
             appID: app.appId,
-            Version: appDetails[i].version,
-            Updated: appDetails[i].updated,
-            Installs: appDetails[i].installs,
-            AndroidVersion: appDetails[i].androidVersion,
+            Version: app.version,
+            Updated: app.updated,
+            Installs: app.installs,
             URL: app.url
         }));
 
@@ -72,14 +70,6 @@ app.post('/search', async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 })
-
-async function getAppDetail(appID, lang, country) {
-    return gplay.app({ 
-        appId: appID,
-        lang: lang,
-        country: country
-     });
-}
 
 function generateExcel(data) {
     const ws = xl.utils.json_to_sheet(data);
