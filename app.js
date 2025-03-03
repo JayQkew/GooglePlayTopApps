@@ -57,14 +57,22 @@ app.post('/search', async (req, res) => {
         const searchResults = await gplay.search(
             {
                 term: searchValue,
-                num: num,
+                num: parseInt(num),
                 lang: lang,
                 country: country,
                 fullDetail: 'true'
             }
         );
 
-        console.log(searchResults);
+        const simplifiedResults = searchResults.map(results => {
+            return {
+                Name: results.title,
+                Version: results.version
+            }
+        })
+
+        console.log(simplifiedResults);
+        res.json(searchResults);
     } catch (error){
         console.log('Error during search: ', error);
         res.status(500).json({ success: false, message: "Server error" });

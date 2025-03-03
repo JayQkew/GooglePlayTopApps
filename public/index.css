@@ -1,0 +1,18 @@
+.download{
+    font-size: 1rem;
+    text-decoration: none; 
+    color: white; 
+    background-color: lightskyblue; 
+    border-radius: 100vw; 
+    width: 7.5rem;
+    padding: 0.25rem;
+    display: inline-block;
+    cursor: pointer;
+    text-align: center;
+}
+.download:visited{
+    color: black;
+}
+.download:hover{
+    background-color: rgb(68, 130, 209);
+}
