@@ -249,22 +249,66 @@ async function getTopApps(){
         }
 
         const topApps = await res.json();
-        const specifiedData = topApps.map(app => {
-            const timeStamp = new Date(app.updated);
-            const appUpdate = new Intl.DateTimeFormat('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: '2-digit'
-            }).format(timeStamp);
+        // const specifiedData = topApps.foreach(app => {
+        //     const timeStamp = new Date(app.updated);
 
-            return{
-                Title: app.title,
-                AppID: app.appId,
-                Updated: appUpdate,
-                Version: app.version,
-                Url: app.url
-            }
-        })
+        //     const filteredApps = apps.filter(app => {
+        //         const timeStamp = new Date(app.updated); // Convert UNIX timestamp
+        //         return filterDate(timeStamp, startDate, endDate); // Compare as Date objects
+        //     });
+
+        //     filteredApps.map(app => {
+        //         const formattedDate = new Intl.DateTimeFormat('en-US', {
+        //             year: 'numeric',
+        //             month: 'short',
+        //             day: '2-digit'
+        //         }).format(timeStamp);
+
+        //         return {
+        //             Title: app.title,
+        //             AppID: app.appId,
+        //             Updated: formattedDate,
+        //             Version: app.version,
+        //             Url: app.url
+        //         }
+        //     });
+
+
+        //     return{
+        //         Title: filteredApps.Title,
+        //         AppID: filteredApps.AppID,
+        //         Updated: filteredApps.Updated,
+        //         Version: filteredApps.Version,
+        //         Url: filteredApps.Url
+        //     }
+        // });
+
+        const specifiedData = topApps.map(app => {
+        
+            const filteredApps = topApps.filter(app => {
+                const timeStamp = new Date(app.updated); // Ensure Date object
+                return filterDate(timeStamp, new Date(formData.startDate), new Date(formData.endDate)); // Compare as Date objects
+            });
+        
+            // Map the filtered apps to the required format
+            return filteredApps.map(app => {
+                const formattedDate = new Intl.DateTimeFormat('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit'
+                }).format(new Date(app.updated)); // Format date properly
+        
+                return {
+                    Title: app.title,
+                    AppID: app.appId,
+                    Updated: formattedDate,
+                    Version: app.version,
+                    Url: app.url
+                };
+            });
+        }).flat(); // Flatten the array if `topApps.map()` creates nested arrays
+        
+        // const dateFiltered = specifiedData.filter(date => filterDate(date, formData.startDate, formData.endDate));
 
         generateTable(specifiedData);
 
@@ -275,9 +319,21 @@ async function getTopApps(){
 
 }
 
+function filterDate(date, start, end) {
+    // console.log("Filtering:", date, "Start:", start, "End:", end);
+    // console.log("Types:", typeof date, typeof start, typeof end);
+
+    if (!(date instanceof Date) || !(start instanceof Date) || !(end instanceof Date)) {
+        console.error("Error: One or more inputs are not Date objects!");
+        return false;
+    }
+
+    return date >= start && date <= end;
+}
+
 function generateTable(data) {
     const table = document.getElementById('top-apps-table');
-    table.innerHTML = ''; // Clear existing table content
+    table.innerHTML = '';
 
     const thead = document.createElement('thead');
     const hRow = document.createElement('tr');
@@ -288,9 +344,8 @@ function generateTable(data) {
         const th = document.createElement('th');
         th.textContent = c;
         th.setAttribute('data-column', c);
-        th.setAttribute('data-order', 'desc'); // Default to descending order
+        th.setAttribute('data-order', 'desc');
 
-        // Add ID to the "Updated" column header
         if (c === "Updated") {
             th.id = "update-header";
         }
@@ -319,7 +374,6 @@ function generateTable(data) {
 
     table.appendChild(tbody);
 }
-
 
 function sortTableByColumn(table, columnIndex, header) {
     const tbody = table.querySelector('tbody');
@@ -405,7 +459,10 @@ function getFormData(){
     const language = document.getElementById('language').value;
     const country = document.getElementById('country').value;
 
-    return { category, collection, numApps, language, country };
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+
+    return { category, collection, numApps, language, country, startDate, endDate };
 }
 
 createAllCategories();
