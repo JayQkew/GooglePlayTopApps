@@ -63,6 +63,34 @@ app.post('/search', async (req, res) => {
     }
 })
 
+app.post('/packageSearch', async (req, res) => {
+    try{
+        const {searchValue} = req.body;
+        console.log("Searching: "+ searchValue);
+
+        const searchResults = await gplay.search(
+            {
+                term: searchValue,
+                num: 1,
+                fullDetail: 'true'
+            }
+        );
+
+        const simplifiedResults = searchResults.map(results => {
+            return {
+                Name: results.title,
+                Version: results.version
+            }
+        })
+
+        console.log(simplifiedResults);
+        res.json(searchResults);
+    } catch (error){
+        console.log('Error during search: ', error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+})
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
