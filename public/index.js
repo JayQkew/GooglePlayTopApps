@@ -195,45 +195,6 @@ document.getElementById('appForm').addEventListener('submit', function(event) {
     getTopApps();
 });
 
-async function getExcelFile() {
-    const formData = getFormData();
-
-    try {
-        const res = await fetch("/topAppsFile", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData)
-        });
-
-        if(!res.ok){
-            throw new Error("Failed to download file");
-        }
-
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-
-        const downloadBtns = document.querySelectorAll('.download');
-
-        if(downloadBtns.length > 0){
-            downloadBtns[0].href = url;
-            downloadBtns[0].download = `top_apps_${Date.now()}.xlsx`;
-        } else{
-            const btnContainer = document.getElementById('btn-container')
-            const a = document.createElement('a');
-            a.classList.add('download');
-            a.href = url;
-            a.download = `top_apps_${Date.now()}.xlsx`;
-            a.textContent = 'Download'
-            btnContainer.appendChild(a);
-        }
-
-        console.log("Download started successfully")
-    } catch (error) {
-        console.error("Error submitting form:", error);
-        return null;
-    }
-}
-
 async function getTopApps(){
     const formData = getFormData();
 
@@ -420,7 +381,6 @@ function sortTableByColumn(table, columnIndex, header) {
     tbody.innerHTML = '';
     rows.forEach(row => tbody.appendChild(row));
 }
-
 
 function createAllCategories(){
     const categorySelect = document.getElementById('category');
