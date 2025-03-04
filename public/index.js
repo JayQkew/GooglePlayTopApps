@@ -249,67 +249,27 @@ async function getTopApps(){
         }
 
         const topApps = await res.json();
-        // const specifiedData = topApps.foreach(app => {
-        //     const timeStamp = new Date(app.updated);
+        const filteredApps = topApps.filter(app => {
+            const timeStamp = new Date(app.updated);
+            return filterDate(timeStamp, new Date(formData.startDate), new Date(formData.endDate));
+        });
 
-        //     const filteredApps = apps.filter(app => {
-        //         const timeStamp = new Date(app.updated); // Convert UNIX timestamp
-        //         return filterDate(timeStamp, startDate, endDate); // Compare as Date objects
-        //     });
-
-        //     filteredApps.map(app => {
-        //         const formattedDate = new Intl.DateTimeFormat('en-US', {
-        //             year: 'numeric',
-        //             month: 'short',
-        //             day: '2-digit'
-        //         }).format(timeStamp);
-
-        //         return {
-        //             Title: app.title,
-        //             AppID: app.appId,
-        //             Updated: formattedDate,
-        //             Version: app.version,
-        //             Url: app.url
-        //         }
-        //     });
-
-
-        //     return{
-        //         Title: filteredApps.Title,
-        //         AppID: filteredApps.AppID,
-        //         Updated: filteredApps.Updated,
-        //         Version: filteredApps.Version,
-        //         Url: filteredApps.Url
-        //     }
-        // });
-
-        const specifiedData = topApps.map(app => {
+        const specifiedData = filteredApps.map(app => {
+            const formattedDate = new Intl.DateTimeFormat('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit'
+            }).format(new Date(app.updated)); // Format date properly
+    
+            return {
+                Title: app.title,
+                AppID: app.appId,
+                Updated: formattedDate,
+                Version: app.version,
+                Url: app.url
+            };
+        })
         
-            const filteredApps = topApps.filter(app => {
-                const timeStamp = new Date(app.updated); // Ensure Date object
-                return filterDate(timeStamp, new Date(formData.startDate), new Date(formData.endDate)); // Compare as Date objects
-            });
-        
-            // Map the filtered apps to the required format
-            return filteredApps.map(app => {
-                const formattedDate = new Intl.DateTimeFormat('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: '2-digit'
-                }).format(new Date(app.updated)); // Format date properly
-        
-                return {
-                    Title: app.title,
-                    AppID: app.appId,
-                    Updated: formattedDate,
-                    Version: app.version,
-                    Url: app.url
-                };
-            });
-        }).flat(); // Flatten the array if `topApps.map()` creates nested arrays
-        
-        // const dateFiltered = specifiedData.filter(date => filterDate(date, formData.startDate, formData.endDate));
-
         generateTable(specifiedData);
 
     } catch (error) {

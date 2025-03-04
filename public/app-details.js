@@ -188,7 +188,7 @@ function createAppDetailElement(appDetail){
                 <p>Version: <span>${appDetail.version}</span></p>
                 <p>Updated: <span>${appUpdate}</span></p>
                 <p>App ID: <span>${appDetail.appId}</span></p>
-                <p>App Page: <span>${appDetail.url}</span></p>
+                <p>App Page: <a href="${appDetail.url}" target="_blank">Link</a></p>
             </div>
         </section>
         <section class="details-container">
@@ -208,7 +208,7 @@ function createAppDetailElement(appDetail){
             <p>developer: <span>${appDetail.developer}</span></p>
             <p>developer ID: <span>${appDetail.developerId}</span></p>
             <p>developer email: <span>${appDetail.developerEmail}</span></p>
-            <p>developer website: <span>${appDetail.developerWebsite}</span></p>
+            <p>developer website: <a href="${appDetail.developerWebsite}" target="_blank">Website</a></p>
             <p>developer address: <span>${appDetail.developerAddress}</span></p>
             <p>developer legal name: <span>${appDetail.developerLegalName}</span></p>
             <p>developer legal email: <span>${appDetail.developerLegalEmail}</span></p>
@@ -222,7 +222,7 @@ function createAppDetailElement(appDetail){
             <p>updated: <span>${appUpdate}</span></p>
             <p>recent changes: <span>${appDetail.recentChanges}</span></p>
             <p>app ID: <span>${appDetail.appId}</span></p>
-            <p>app Page: <span>${appDetail.url}</span></p>
+            <p>app page: <a href="${appDetail.url}" target="_blank">Link</a></p>
         </section>
     </article>
     `
