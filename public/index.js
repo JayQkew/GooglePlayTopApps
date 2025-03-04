@@ -383,7 +383,7 @@ function exportTableToExcel(){
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "TopApps");
 
-    XLSX.writeFile(wb, "top_apps.xlsx");
+    XLSX.writeFile(wb, `top_apps_${Date.now()}.xlsx`);
 }
 
 document.querySelector('.download').addEventListener('click', exportTableToExcel);
