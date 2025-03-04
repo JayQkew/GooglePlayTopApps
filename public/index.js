@@ -269,7 +269,7 @@ async function getTopApps(){
                 Url: app.url
             };
         })
-        
+
         generateTable(specifiedData);
 
     } catch (error) {
@@ -280,13 +280,25 @@ async function getTopApps(){
 }
 
 function filterDate(date, start, end) {
-    if (!(date instanceof Date) || !(start instanceof Date) || !(end instanceof Date)) {
-        console.error("Error: One or more inputs are not Date objects!");
-        return false;
+    // Convert input to Date objects
+    date = new Date(date);
+    start = start ? new Date(start) : null;
+    end = end ? new Date(end) : null;
+
+    // If `date` is invalid, return true (allow it to pass through)
+    if (isNaN(date.getTime())) {
+        console.warn("Warning: Invalid date detected, allowing through.");
+        return true;
     }
 
-    return date >= start && date <= end;
+    // If start or end is invalid, treat them as "no filter"
+    const isStartValid = start && !isNaN(start.getTime());
+    const isEndValid = end && !isNaN(end.getTime());
+
+    // Apply filtering logic
+    return (!isStartValid || date >= start) && (!isEndValid || date <= end);
 }
+
 
 function generateTable(data) {
     const table = document.getElementById('top-apps-table');
