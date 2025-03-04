@@ -302,7 +302,6 @@ function filterDate(date, start, end) {
     return (!isStartValid || date >= start) && (!isEndValid || date <= end);
 }
 
-
 function generateTable(data) {
     const table = document.getElementById('top-apps-table');
     table.innerHTML = '';
@@ -357,6 +356,37 @@ function generateTable(data) {
 
     table.appendChild(tbody);
 }
+
+function exportTableToExcel(){
+    const table = document.getElementById('top-apps-table'); // Assuming you're working with an HTML table
+
+    // Convert the data into an array first, if needed
+    const data = [];
+    const rows = table.rows;
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const rowData = [];
+        for (let j = 0; j < row.cells.length; j++) {
+            let cell = row.cells[j].innerText || row.cells[j].textContent;
+            if (j === 3) { 
+                cell = cell.toString();
+            }
+            rowData.push(cell);
+        }
+        data.push(rowData);
+    }
+
+    // Now convert the modified data into a sheet
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // Create a workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "TopApps");
+
+    XLSX.writeFile(wb, "top_apps.xlsx");
+}
+
+document.querySelector('.download').addEventListener('click', exportTableToExcel);
 
 function sortTableByColumn(table, columnIndex, header) {
     const tbody = table.querySelector('tbody');
