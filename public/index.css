@@ -6,7 +6,7 @@
     border-radius: 100vw;
     width: 7.5rem;
     padding: 0.25rem;
-    display: inline-block;
+    /* display: inline-block; */
     cursor: pointer;
     text-align: center;
 }
@@ -50,6 +50,10 @@ td{
 
 #update-header{
     cursor: pointer;
+}
+
+.hidden{
+    display: none;
 }
 
 /* thead{

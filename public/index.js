@@ -191,7 +191,7 @@ export const countries = [
 
 document.getElementById('appForm').addEventListener('submit', function(event) {
     event.preventDefault();
-    getExcelFile();
+    //getExcelFile();
     getTopApps();
 });
 
@@ -271,6 +271,9 @@ async function getTopApps(){
         })
 
         generateTable(specifiedData);
+
+        const downloadBtn = document.querySelector('.download');
+        downloadBtn.classList.remove('hidden');
 
     } catch (error) {
         console.error("Error submitting form:", error);
