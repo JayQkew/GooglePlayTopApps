@@ -320,9 +320,6 @@ async function getTopApps(){
 }
 
 function filterDate(date, start, end) {
-    // console.log("Filtering:", date, "Start:", start, "End:", end);
-    // console.log("Types:", typeof date, typeof start, typeof end);
-
     if (!(date instanceof Date) || !(start instanceof Date) || !(end instanceof Date)) {
         console.error("Error: One or more inputs are not Date objects!");
         return false;
@@ -366,7 +363,18 @@ function generateTable(data) {
         const tr = document.createElement('tr');
         cols.forEach(c => {
             const td = document.createElement('td');
-            td.textContent = row[c];
+
+            if (c === "Url") {
+                const link = document.createElement('a');
+                link.href = row[c]; // Set href attribute
+                link.textContent = "Open Link"; // Text inside the link
+                link.target = "_blank"; // Open in new tab
+                link.rel = "noopener noreferrer"; // Security best practice
+                td.appendChild(link);
+            } else {
+                td.textContent = row[c];
+            }
+
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
