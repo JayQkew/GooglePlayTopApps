@@ -6,18 +6,13 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="index.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script type="module" src="nav-bar.js"></script>
     <title>General Search</title>
 </head>
 <body>
     <header>
-        <h1>Google Play Top Apps</h1>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="app-details.html">App Details</a></li>
-                <li><a href="single-search.html">Package Search</a></li>
-            </ul>
-        </nav>
+        <h1>GP Top Apps</h1>
+        <nav></nav>
     </header>
     <main>
         <form action="/topAppsFile" method="post" id="appForm">
@@ -48,7 +43,7 @@
 
             <section class="input-section">
                 <label for="numapps">Number of Apps</label>
-                <input type="number" name="numapps" id="numapps" class="num-input" value="100" max="200" min="1">
+                <input type="number" name="numapps" id="numapps" class="num-input" value="200" max="200" min="1">
             </section>
 
             <section class="input-section">
@@ -63,7 +58,7 @@
 
             <section id="btn-container">
                 <input type="submit" value="Submit" id="submit-btn" class="btn">
-                <button class="download hidden"> Download</button>
+                <button class="download hidden">Download</button>
             </section>
         </form>
         <div class="table-container">
