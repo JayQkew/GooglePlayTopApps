@@ -191,7 +191,6 @@ export const countries = [
 
 document.getElementById('appForm').addEventListener('submit', function(event) {
     event.preventDefault();
-    //getExcelFile();
     getTopApps();
 });
 
@@ -441,5 +440,3 @@ function getFormData(){
 createAllCategories();
 createAllLanguages();
 createAllCountries();
-
-// export default AppData;

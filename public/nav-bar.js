@@ -10,8 +10,10 @@ function createNavBar(){
     const ul = document.createElement('ul');
 
     pages.map(page =>{
+        const pageClass = (document.title === page.name) ? 'current-page' : '';
+
         const pageElement = `
-            <li><a href="${page.href}">${page.name}</a></li>
+            <li><a href="${page.href}" class="${pageClass}">${page.name}</a></li>
         `
         ul.innerHTML += pageElement;
     })

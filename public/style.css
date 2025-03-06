@@ -11,7 +11,7 @@
 *{
     border: 0rem;
     margin: 0rem;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Cabinet Grotesk Regular', Arial, Helvetica, sans-serif;
     background-color: var(--dm-grey-02);
 }
 
@@ -33,12 +33,21 @@ header{
 }
 
 h1{
+    font-family: 'Cabinet Grotesk Black';
     background-color: white;
-    /* text-shadow: 2px 2px 1px var(--dm-grey-01); */
     border-radius: 100vw;
     box-shadow: 4px 4px 2px inset var(--dm-grey-01);
     padding: 1rem;
     color: #4a4a4a;
+    transition: all ease-in-out 0.3s;
+}
+h1:hover{
+    background-color: var(--dm-grey-02);
+    box-shadow: 0px 0px 0px inset var(--dm-grey-01);
+}
+
+a:visited{
+    color: var(--dm-grey-03);
 }
 
 nav ul{
@@ -47,17 +56,41 @@ nav ul{
     align-items: center;
     justify-content: center;
     list-style: none;
-    gap: 1rem;
+    gap: 2rem;
     padding: 0rem;
     margin: 2rem;
 }
 
 nav ul li a{
     text-decoration: none;
-    font-weight: bold;
+    padding-block: 0.5rem;
+    padding-inline: 1rem;
+    font-weight: 500;
+    color: var(--dm-grey-03);
+    
+    transition: all ease-in-out 0.3s;
 }
 nav ul li a:visited{
     color: var(--dm-grey-03);
+    
+}
+nav ul li a:hover{
+    background-color: white;
+    border-radius: 100vw;
+    box-shadow: 4px 4px 2px inset var(--dm-grey-01);
+
+}
+
+.current-page{
+    background-color: white;
+    border-radius: 100vw;
+    box-shadow: 4px 4px 2px inset var(--dm-grey-01);
+    font-weight: bolder;
+    transition: all ease-in-out 0.3s;
+}
+.current-page:hover{
+    background-color: var(--dm-grey-02);
+    box-shadow: 0px 0px 0px inset var(--dm-grey-01);
 }
 
 main{
@@ -107,14 +140,33 @@ select{
     border-radius: 100vw;
 }
 
+
 .btn{
     font-size: 1rem;
     border-radius: 100vw;
-    background-color: lightgray;
+    background-color: white;
+    box-shadow: 4px 4px 2px var(--dm-grey-01);
+    /* border: solid 1px black; */
     padding: 0.25rem;
     width: 7.5rem;
     cursor: pointer;
+    transition: all ease-in-out 0.3s;
 }
 .btn:hover{
-    background-color: darkgray;
+    box-shadow: 0px 0px 0px var(--dm-grey-01);
+}
+
+@font-face {
+    font-family: 'Cabinet Grotesk Regular';
+    src: url('fonts/CabinetGrotesk-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Cabinet Grotesk Black';
+    src: url('fonts/CabinetGrotesk-Black.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Cabinet Grotesk Light';
+    src: url('fonts/CabinetGrotesk-Extralight.ttf') format('truetype');
 }
