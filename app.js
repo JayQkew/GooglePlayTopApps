@@ -23,13 +23,17 @@ app.post("/topApps", async (req, res) => {
                 num: parseInt(numApps),
                 lang: language,
                 country: country,
-                fullDetail: 'true'
+                appDetails: 'true',
+                throttle: 10
             }
         );
 
+        const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId)));
+
+
         res.json(topApps);
     } catch (error) {
-        
+        console.log("ERROR: " + error)
     }
 })
 
@@ -46,7 +50,7 @@ app.post('/search', async (req, res) => {
                 country: country,
                 fullDetail: 'true'
             }
-        );
+        )[0];
 
         const simplifiedResults = searchResults.map(results => {
             return {
@@ -90,6 +94,14 @@ app.post('/packageSearch', async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 })
+
+async function getAppDetail(appID) {
+    return gplay.search({ 
+        term: appID,
+        num: 1,
+        fullDetail: 'true'
+     });
+}
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

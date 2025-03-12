@@ -198,6 +198,7 @@ async function getTopApps(){
     const formData = getFormData();
 
     try {
+        console.log("Post start")
         const res = await fetch("/topApps", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -208,7 +209,9 @@ async function getTopApps(){
             throw new Error("Failed to download file");
         }
 
+        console.log("POST OK")
         const topApps = await res.json();
+        console.log(topApps);
         const filteredApps = topApps.filter(app => {
             const timeStamp = new Date(app.updated);
             return filterDate(timeStamp, new Date(formData.startDate), new Date(formData.endDate));
@@ -230,7 +233,9 @@ async function getTopApps(){
             };
         })
 
+        console.log("Table generation start");
         generateTable(specifiedData);
+        console.log("Table generation end");
 
         const downloadBtn = document.querySelector('.download');
         downloadBtn.classList.remove('hidden');
