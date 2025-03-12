@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import gplay from "google-play-scraper";
-import xl from 'xlsx';
-
+import puppeteer from 'puppeteer';
 
 const app = express();
 const PORT = 3000;
@@ -10,6 +8,57 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+
+(async () => {
+    const browser = await puppeteer.launch({headless: false});
+    const page = await browser.newPage();
+
+    await page.goto('https://appfigures.com/top-apps/google-play/united-states/top-overall');
+
+    // Function to scroll to the bottom of the page
+    async function autoScroll(page) {
+        await page.evaluate(async () => {
+            await new Promise((resolve) => {
+                let totalHeight = 0;
+                const distance = window.innerHeight;
+                const timer = setInterval(() => {
+                    const scrollHeight = document.body.scrollHeight;
+                    window.scrollBy(0, distance);
+                    totalHeight += distance;
+                    if (totalHeight >= scrollHeight) {
+                        clearInterval(timer);
+                        resolve();
+                    }
+                }, 500);
+            });
+        });
+    }
+
+    // Scroll to bottom
+    await autoScroll(page);
+
+    const topFreeApps = await page.evaluate(() => {
+        const list = document.querySelectorAll('.s1488507463-0');
+
+        let allTop = Array.from(list).map( li =>{
+            const appElements = li.querySelectorAll('.s-4262409-0'); // Update the selector if necessary
+            return Array.from(appElements).map(app => app.innerText.trim());
+        })
+
+        const freeApps = allTop.filter((_, i) => i % 3 === 0).flat();
+        const paidApps = allTop.filter((_, i) => i % 3 === 1).flat();
+        const grossingApps = allTop.filter((_, i) => i % 3 === 2).flat();
+
+        allTop = [freeApps, paidApps, grossingApps];
+
+        return allTop;
+    });
+
+    console.log('Top Free App: ', topFreeApps);
+
+    await browser.close();
+})();
 
 app.post("/topApps", async (req, res) => {
     try {
@@ -34,6 +83,16 @@ app.post("/topApps", async (req, res) => {
         res.json(topApps);
     } catch (error) {
         console.log("ERROR: " + error)
+    }
+})
+
+app.get('/top-free', async (req, res) => {
+    try{
+
+
+    } catch (err){
+        console.error("Error in search: ", err);
+        res.status(500).json({ success: false, message: "Server error" });
     }
 })
 
