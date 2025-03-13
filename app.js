@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 
 const app = express();
 const PORT = 3000;
@@ -11,54 +11,167 @@ app.use(express.static('public'));
 
 
 (async () => {
-    const browser = await puppeteer.launch({headless: false});
+    const browser = await puppeteer.launch({
+        executablePath: '/usr/bin/chromium-browser',
+        headless: false,
+    });
     const page = await browser.newPage();
 
-    await page.goto('https://appfigures.com/top-apps/google-play/united-states/top-overall');
+    await page.goto('https://appfigures.com/top-apps/google-play/united-states/top-overall', {
+        waitUntil: 'networkidle0'
+    });
 
-    // Function to scroll to the bottom of the page
     async function autoScroll(page) {
         await page.evaluate(async () => {
             await new Promise((resolve) => {
                 let totalHeight = 0;
-                const distance = window.innerHeight;
+                const distance = 250;
+                const pageLength = 13000;
+
                 const timer = setInterval(() => {
-                    const scrollHeight = document.body.scrollHeight;
                     window.scrollBy(0, distance);
                     totalHeight += distance;
-                    if (totalHeight >= scrollHeight) {
+                    console.log('total height: ' + totalHeight);
+                    if (totalHeight >= pageLength) {
                         clearInterval(timer);
                         resolve();
                     }
-                }, 500);
+                }, 70);
             });
         });
     }
 
-    // Scroll to bottom
     await autoScroll(page);
 
     const topFreeApps = await page.evaluate(() => {
-        const list = document.querySelectorAll('.s1488507463-0');
+        const list = Array.from(document.querySelectorAll('.s1488507463-0')).filter((_,i) => i % 3 == 0)
 
-        let allTop = Array.from(list).map( li =>{
+        let freeApps = Array.from(list).flatMap( li =>{
             const appElements = li.querySelectorAll('.s-4262409-0'); // Update the selector if necessary
-            return Array.from(appElements).map(app => app.innerText.trim());
+            return Array.from(appElements).map(_app => ({
+                name: _app.innerText.trim(),
+                link: _app.href,
+                packageName: '',
+                lastUpated: '',
+                version: ''
+            }));
         })
 
-        const freeApps = allTop.filter((_, i) => i % 3 === 0).flat();
-        const paidApps = allTop.filter((_, i) => i % 3 === 1).flat();
-        const grossingApps = allTop.filter((_, i) => i % 3 === 2).flat();
-
-        allTop = [freeApps, paidApps, grossingApps];
-
-        return allTop;
+        return freeApps;
     });
+
+    const chunkSize = 50;
+    let appChunks = [];
+
+    //slices the apps into chunkc for processing speed
+    for(let i = 0; i < topFreeApps.length; i += chunkSize){
+        appChunks.push(topFreeApps.slice(i, i + chunkSize));
+    }
+
+    const pages = await Promise.all(appChunks.map(() => browser.newPage()));
+
+    // Process each chunk in a separate tab
+    await Promise.all(
+        pages.map(async (tab, index) => {
+            const apps = appChunks[index] || [];
+            for (const app of apps) {
+                console.log(`Tab ${index + 1} visiting: ${app.name}`);
+                await tab.goto(app.link, { waitUntil: 'networkidle0' });
+                
+                const updatedApp = await tab.evaluate(() => {
+                    const packageNameEl = document.querySelector('.s-1674543659-0.s1901059984-1');
+
+                    const lastUpdatedParent = document.querySelectorAll('.s797788345-0');
+                    const infoWrapper = lastUpdatedParent[6].querySelectorAll('div');
+                    const lastUpdatedEl = infoWrapper[1].querySelector('span');
+                    
+                    const versionEl = document.querySelectorAll('.s-400240423-0.s-533381810-1');
+
+                    console.log('lastUpdated parent element: ' + lastUpdatedParent);
+                    console.log('lastUpdated element: ' + lastUpdatedEl);
+                    console.log('version element: ' + versionEl);
+                
+                    return {
+                        packageName: packageNameEl ? packageNameEl.innerText.trim() : '',
+                        lastUpdated: lastUpdatedEl ? lastUpdatedEl.innerText : '',
+                        version: versionEl[16] ? versionEl[16].innerText.trim() : ''
+                    };
+                }, app);
+                
+                app.packageName = updatedApp.packageName;
+                app.lastUpdated = updatedApp.lastUpdated;
+                app.version = updatedApp.version;
+
+                console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t Last Updated: ${app.lastUpated} \n\t App ID: ${app.packageName}`);
+                
+                await new Promise(r => setTimeout(r, 30000)); // Delay between URLs
+            }
+        })
+    );
 
     console.log('Top Free App: ', topFreeApps);
 
-    await browser.close();
+    // await browser.close();
 })();
+
+// const browser = await puppeteer.launch({
+//     executablePath: '/usr/bin/chromium-browser',
+//     headless: false, 
+//     args: [
+//     '--incognito',
+//     '--no-sandbox'
+//   ]});
+
+// (async () => {
+//     const browser = await puppeteer.launch();
+//     const page = await browser.newPage();
+
+//     await page.goto('https://www.luno.com/en/price/BTC', 
+//         {
+//             waitUntil: 'networkidle0',
+//           }
+//     );
+
+
+//     const inputId = '#mat-input-1';
+//     try {
+//         // Wait for the input element to be present
+//         await page.waitForSelector(inputId);
+    
+//         // Set the input value and trigger Angular's change detection
+//         await page.evaluate((selector) => {
+//           const input = document.querySelector(selector);
+//         //   if (input) {
+//         //     // input.value = 'My Value with ID';
+//         //     input.dispatchEvent(new Event('input'));
+//         //   }
+//          console.log(input);
+//         }, inputId);
+    
+//         // Verify the input value
+//         const inputValue = await page.$eval(inputId, (el) => el.value);
+//         console.log('Input Value:', inputValue);
+    
+//       } catch (error) {
+//         console.error('Error interacting with input:', error);
+//       }
+
+
+//       browser.close();
+
+//     // setInterval(async () => {
+//     //     const amount = await page.evaluate(() => {
+//     //         const element = document.getElementById('mat-input-1');
+//     //         return element;
+//     //     });
+//     //     console.log(amount);
+//     //     browser.close();
+//     // }, 10000)
+
+
+
+
+// });
 
 app.post("/topApps", async (req, res) => {
     try {
