@@ -36,7 +36,7 @@ app.use(express.static('public'));
                         clearInterval(timer);
                         resolve();
                     }
-                }, 70);
+                }, 100);
             });
         });
     }
@@ -52,7 +52,6 @@ app.use(express.static('public'));
                 name: _app.innerText.trim(),
                 link: _app.href,
                 packageName: '',
-                lastUpated: '',
                 version: ''
             }));
         })
@@ -80,38 +79,27 @@ app.use(express.static('public'));
                 
                 const updatedApp = await tab.evaluate(() => {
                     const packageNameEl = document.querySelector('.s-1674543659-0.s1901059984-1');
-
-                    const lastUpdatedParent = document.querySelectorAll('.s797788345-0');
-                    const infoWrapper = lastUpdatedParent[6].querySelectorAll('div');
-                    const lastUpdatedEl = infoWrapper[1].querySelector('span');
                     
-                    const versionEl = document.querySelectorAll('.s-400240423-0.s-533381810-1');
-
-                    console.log('lastUpdated parent element: ' + lastUpdatedParent);
-                    console.log('lastUpdated element: ' + lastUpdatedEl);
-                    console.log('version element: ' + versionEl);
-                
+                    const versionEl = document.querySelectorAll('.s-400240423-0.s-533381810-1');                
                     return {
                         packageName: packageNameEl ? packageNameEl.innerText.trim() : '',
-                        lastUpdated: lastUpdatedEl ? lastUpdatedEl.innerText : '',
                         version: versionEl[16] ? versionEl[16].innerText.trim() : ''
                     };
                 }, app);
                 
                 app.packageName = updatedApp.packageName;
-                app.lastUpdated = updatedApp.lastUpdated;
                 app.version = updatedApp.version;
 
-                console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t Last Updated: ${app.lastUpated} \n\t App ID: ${app.packageName}`);
+                console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t App ID: ${app.packageName}`);
                 
-                await new Promise(r => setTimeout(r, 30000)); // Delay between URLs
+                await new Promise(r => setTimeout(r, 60000)); // Delay between URLs
             }
         })
     );
 
     console.log('Top Free App: ', topFreeApps);
 
-    // await browser.close();
+    await browser.close();
 })();
 
 // const browser = await puppeteer.launch({
