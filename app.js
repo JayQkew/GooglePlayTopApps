@@ -63,10 +63,11 @@ db.connect((err) => {
         let freeApps = Array.from(list).flatMap( li =>{
             const appElements = li.querySelectorAll('.s-4262409-0'); // Update the selector if necessary
             return Array.from(appElements).map(_app => ({
-                name: _app.innerText.trim(),
+                name: _app.innerText.substring(_app.innerText.indexOf(' ') + 1).trim(),
                 link: _app.href,
                 packageName: '',
-                version: ''
+                version: '',
+                lastUpdated: ''
             }));
         })
 
@@ -86,29 +87,48 @@ db.connect((err) => {
     const detailsPage = await browser.newPage();
 
     for(const app of topFreeApps) {
-        await detailsPage.goto(app.link, { waitUntil: 'networkidle0'});
+        await detailsPage.goto(app.link, { 
+            waitUntil: 'networkidle0',
+            timeout: 60000
+        });
 
-        const updatedApp = await tab.evaluate(() => {
+        const updatedApp = await detailsPage.evaluate(() => {
             const packageNameEl = document.querySelector('.s-1674543659-0.s1901059984-1');
-            const versionEl = document.querySelectorAll('.s-400240423-0.s-533381810-1');                
+            const parentElements = document.querySelectorAll('.s797788345-0');
+            let versionEl, dateEl; 
+
+            for(const el of parentElements){
+                const innerText = el.childNodes[0].innerText;
+                if(innerText === 'Version' && versionEl == null){
+                    versionEl = el.childNodes[1];
+                }
+                else if (innerText === 'Last updated' && dateEl == null){
+                    dateEl = el.childNodes[1];
+                }
+            }
+
             return {
                 packageName: packageNameEl ? packageNameEl.innerText.trim() : '',
-                version: versionEl[16] ? versionEl[16].innerText.trim() : ''
+                version: versionEl ? versionEl.innerText.trim() : '',
+                lastUpdated: dateEl ? dateEl.innerText.trim() : ''
             };
         });
         
         app.packageName = updatedApp.packageName;
         app.version = updatedApp.version;
+        app.lastUpdated = updatedApp.lastUpdated;
 
-        console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t App ID: ${app.packageName}`);
+        console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t App ID: ${app.packageName} \n\t Last Updated: ${app.lastUpdated}`);
 
         //load data onto database
         //check if app already exists
         checkExistingApps(app.packageName, (found) => {
             if(found){
                 //update the version on the db
+                updateAppData(app.packageName, app.version);
             } else {
                 //add a new row of data
+                addAppData(app);
             }
         });
 
@@ -131,6 +151,30 @@ db.connect((err) => {
                 console.log('App *' + packageName + '* DOESNT exist');
                 callback(false);
             }
+        });
+    }
+
+    function updateAppData(packageName, newVersion, newDate){
+        const query = `UPDATE app_details SET version = ?, last_updated = ? WHERE package_name = ?`;
+
+        db.execute(query, [packageName, newVersion, newDate], (err, results) => {
+            if(err){
+                console.error('Error update user: ',  err);
+                return;
+            }
+
+            console.log('App *' + packageName + '* was updated');
+        });
+    }
+
+    function addAppData(app){
+        const query = 'INSERT INTO app_details (name, package_name, version, last_updated) VALUES (?, ?, ?, ?)';
+        db.query(query, [app.name, app.packageName, app.version, app.lastUpdated], (err, result) => {
+            if(err) {
+                console.error('Database Error: ', err);
+                return;
+            }
+            console.log('App *' + app.name + '* added to database');
         });
     }
 
