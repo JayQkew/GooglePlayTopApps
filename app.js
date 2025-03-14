@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import puppeteer from 'puppeteer-core';
+import mysql from 'mysql2';
 
 const app = express();
 const PORT = 3000;
@@ -9,6 +10,19 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'root',
+    database: 'gp_apps'
+});
+
+db.connect((err) => {
+    if(err){
+        throw err;
+    }
+    console.log('connected to database');
+});
 
 (async () => {
     const browser = await puppeteer.launch({
@@ -59,43 +73,94 @@ app.use(express.static('public'));
         return freeApps;
     });
 
-    const chunkSize = 50;
-    let appChunks = [];
+    // const chunkSize = 50;
+    // let appChunks = [];
 
     //slices the apps into chunkc for processing speed
-    for(let i = 0; i < topFreeApps.length; i += chunkSize){
-        appChunks.push(topFreeApps.slice(i, i + chunkSize));
+    // for(let i = 0; i < topFreeApps.length; i += chunkSize){
+    //     appChunks.push(topFreeApps.slice(i, i + chunkSize));
+    // }
+
+    // const pages = await Promise.all(appChunks.map(() => browser.newPage()));
+
+    const detailsPage = await browser.newPage();
+
+    for(const app of topFreeApps) {
+        await detailsPage.goto(app.link, { waitUntil: 'networkidle0'});
+
+        const updatedApp = await tab.evaluate(() => {
+            const packageNameEl = document.querySelector('.s-1674543659-0.s1901059984-1');
+            const versionEl = document.querySelectorAll('.s-400240423-0.s-533381810-1');                
+            return {
+                packageName: packageNameEl ? packageNameEl.innerText.trim() : '',
+                version: versionEl[16] ? versionEl[16].innerText.trim() : ''
+            };
+        });
+        
+        app.packageName = updatedApp.packageName;
+        app.version = updatedApp.version;
+
+        console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t App ID: ${app.packageName}`);
+
+        //load data onto database
+        //check if app already exists
+        checkExistingApps(app.packageName, (found) => {
+            if(found){
+                //update the version on the db
+            } else {
+                //add a new row of data
+            }
+        });
+
+        await new Promise(r => setTimeout(r, 20000));
     }
 
-    const pages = await Promise.all(appChunks.map(() => browser.newPage()));
+    function checkExistingApps(packageName, callback){
+        const query = 'SELECT COUNT(*) AS count FROM app_details WHERE package_name = ?';
 
-    // Process each chunk in a separate tab
-    await Promise.all(
-        pages.map(async (tab, index) => {
-            const apps = appChunks[index] || [];
-            for (const app of apps) {
-                console.log(`Tab ${index + 1} visiting: ${app.name}`);
-                await tab.goto(app.link, { waitUntil: 'networkidle0' });
-                
-                const updatedApp = await tab.evaluate(() => {
-                    const packageNameEl = document.querySelector('.s-1674543659-0.s1901059984-1');
-                    
-                    const versionEl = document.querySelectorAll('.s-400240423-0.s-533381810-1');                
-                    return {
-                        packageName: packageNameEl ? packageNameEl.innerText.trim() : '',
-                        version: versionEl[16] ? versionEl[16].innerText.trim() : ''
-                    };
-                }, app);
-                
-                app.packageName = updatedApp.packageName;
-                app.version = updatedApp.version;
-
-                console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t App ID: ${app.packageName}`);
-                
-                await new Promise(r => setTimeout(r, 60000)); // Delay between URLs
+        db.execute(query, [packageName], (err, results) => {
+            if (err) {
+                console.error('Error querying the database: ', err);
+                return;
             }
-        })
-    );
+
+            if (results[0].count > 0){
+                console.log('App *' + packageName + '* exists');
+                callback(true);
+            } else{
+                console.log('App *' + packageName + '* DOESNT exist');
+                callback(false);
+            }
+        });
+    }
+
+    // // Process each chunk in a separate tab
+    // await Promise.all(
+    //     pages.map(async (tab, index) => {
+    //         const apps = appChunks[index] || [];
+    //         for (const app of apps) {
+    //             console.log(`Tab ${index + 1} visiting: ${app.name}`);
+    //             await tab.goto(app.link, { waitUntil: 'networkidle0' });
+                
+    //             const updatedApp = await tab.evaluate(() => {
+    //                 const packageNameEl = document.querySelector('.s-1674543659-0.s1901059984-1');
+                    
+    //                 const versionEl = document.querySelectorAll('.s-400240423-0.s-533381810-1');                
+    //                 return {
+    //                     packageName: packageNameEl ? packageNameEl.innerText.trim() : '',
+    //                     version: versionEl[16] ? versionEl[16].innerText.trim() : ''
+    //                 };
+    //             }, app);
+                
+    //             app.packageName = updatedApp.packageName;
+    //             app.version = updatedApp.version;
+
+    //             console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t App ID: ${app.packageName}`);
+                
+    //             await new Promise(r => setTimeout(r, 60000)); // Delay between URLs
+    //         }
+    //     })
+    // );
 
     console.log('Top Free App: ', topFreeApps);
 
