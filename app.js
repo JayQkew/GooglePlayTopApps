@@ -106,11 +106,14 @@ db.connect((err) => {
                     dateEl = el.childNodes[1];
                 }
             }
-
+            
+            const match = dateEl.innerText.match(/\((.*?)\)/);
+            const dateText = match ? match[1] : null;
+            
             return {
                 packageName: packageNameEl ? packageNameEl.innerText.trim() : '',
                 version: versionEl ? versionEl.innerText.trim() : '',
-                lastUpdated: dateEl ? dateEl.innerText.trim() : ''
+                lastUpdated: dateEl ? dateText : ''
             };
         });
         
@@ -125,7 +128,7 @@ db.connect((err) => {
         checkExistingApps(app.packageName, (found) => {
             if(found){
                 //update the version on the db
-                updateAppData(app.packageName, app.version);
+                updateAppData(app.packageName, app.version, app.lastUpdated);
             } else {
                 //add a new row of data
                 addAppData(app);
@@ -157,7 +160,7 @@ db.connect((err) => {
     function updateAppData(packageName, newVersion, newDate){
         const query = `UPDATE app_details SET version = ?, last_updated = ? WHERE package_name = ?`;
 
-        db.execute(query, [packageName, newVersion, newDate], (err, results) => {
+        db.execute(query, [newVersion, newDate, packageName], (err, results) => {
             if(err){
                 console.error('Error update user: ',  err);
                 return;
