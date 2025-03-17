@@ -24,10 +24,75 @@ db.connect((err) => {
     console.log('connected to database');
 });
 
-//updateDatabase();
+updateDatabase();
 //getFindApkApps(500);
-getAppDetails();
+//getAppDetails();
+//compareApps();
 
+async function autoScroll(page) {
+    await page.evaluate(async () => {
+        await new Promise((resolve) => {
+            let totalHeight = 0;
+            const distance = 500;
+            const pageLength = 13000;
+
+            const timer = setInterval(() => {
+                window.scrollBy(0, distance);
+                totalHeight += distance;
+                console.log('total height: ' + totalHeight);
+                if (totalHeight >= pageLength) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 500);
+        });
+    });
+}
+
+async function getFindApkApps(numApps){
+    try{
+        const res = await fetch(`https://findapk.co.za/api/v1/app/get-app-details/petal?page=1&limit=${numApps}`, {
+            method: 'GET',
+            headers: { "Content-Type": "application/json" }
+        });
+
+        if(!res.ok){
+            throw new Error('Failed to get apps');
+        }
+
+        console.log('POST OK');
+        const findApkApps = await res.json();
+        const apps = findApkApps.applications;
+
+        const filteredApps = Object.values(apps.reduce((acc, app) => {
+            acc[app.num] = app; // Always store the last app for each `num`
+            return acc;
+        }, {}));
+
+        return filteredApps;
+    } catch (err){
+        console.error("Error Getting Apps ", err);
+        return null;
+    }
+}
+
+async function compareApps(){
+    const dbApps = await getAppDetails();
+    const findApkApps = await getFindApkApps(500);
+    const needUpdateApps = dbApps.filter(app => {
+        const findApkApp = findApkApps.find(a => a.packageName == app.package_name);
+        if(findApkApp) {
+            if(findApkApp.versionName != app.version){
+                console.log('App: '+ app.name);
+                console.log('\t db: '+ app.version);
+                console.log('\t findApk: '+ findApkApp.versionName);
+                return findApkApp;
+            }
+        }
+    })
+}
+
+//#region Database
 async function updateDatabase() {
     const browser = await puppeteer.launch({
         executablePath: '/usr/bin/chromium-browser',
@@ -112,64 +177,6 @@ async function updateDatabase() {
     await browser.close();
 }
 
-async function autoScroll(page) {
-    await page.evaluate(async () => {
-        await new Promise((resolve) => {
-            let totalHeight = 0;
-            const distance = 500;
-            const pageLength = 13000;
-
-            const timer = setInterval(() => {
-                window.scrollBy(0, distance);
-                totalHeight += distance;
-                console.log('total height: ' + totalHeight);
-                if (totalHeight >= pageLength) {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 500);
-        });
-    });
-}
-
-async function getFindApkApps(numApps){
-    try{
-        const res = await fetch(`https://findapk.co.za/api/v1/app/get-app-details/petal?page=1&limit=${numApps}`, {
-            method: 'GET',
-            headers: { "Content-Type": "application/json" }
-        });
-
-        if(!res.ok){
-            throw new Error('Failed to get apps');
-        }
-
-        console.log('POST OK');
-        const findApkApps = await res.json();
-        const apps = findApkApps.applications;
-
-        let prevNum = 1;
-        let currApp;
-        const filteredApps = apps.filter(app => {
-            if(app.num == prevNum){
-                currApp = app;
-                prevNum = app.num;
-            } else{
-                //add this new one to the filtered apps
-                const oldApp = currApp;
-                currApp = app;
-                prevNum = app.num;
-                return oldApp;
-            }
-        });
-
-        return filteredApps;
-    } catch (err){
-        console.error("Error Getting Apps ", err);
-        return null;
-    }
-}
-
-//#region Database
 function checkExistingApps(packageName, callback){
     const query = 'SELECT COUNT(*) AS count FROM app_details WHERE package_name = ?';
 
@@ -216,7 +223,6 @@ function addAppData(app){
 async function getAppDetails(){
     try{
         const [rows] = await db.promise().query('SELECT * FROM app_details');
-        console.log(rows);
         return rows;
     } catch (err) {
         console.error('Error fetching app details: ', err);

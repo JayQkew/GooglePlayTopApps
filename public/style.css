@@ -6,6 +6,10 @@
     --dm-grey-01: #e0e1dd;
     --dm-grey-02: #f0f0f0;
     --dm-grey-03: #4a4a4a;
+
+    --inner-shadow: 4px 4px 2px inset var(--dm-grey-01);
+    --no-shadow: 0px 0px 0px var(--dm-grey-01);
+    --outer-shadow: 4px 4px 2px var(--dm-grey-01);
 }
 
 *{
@@ -36,7 +40,7 @@ h1{
     font-family: 'Cabinet Grotesk Black';
     background-color: white;
     border-radius: 100vw;
-    box-shadow: 4px 4px 2px inset var(--dm-grey-01);
+    box-shadow: var(--inner-shadow);
     padding: 1rem;
     color: #4a4a4a;
     transition: all ease-in-out 0.3s;
@@ -77,14 +81,14 @@ nav ul li a:visited{
 nav ul li a:hover{
     background-color: white;
     border-radius: 100vw;
-    box-shadow: 4px 4px 2px inset var(--dm-grey-01);
+    box-shadow: var(--inner-shadow);
 
 }
 
 .current-page{
     background-color: white;
     border-radius: 100vw;
-    box-shadow: 4px 4px 2px inset var(--dm-grey-01);
+    box-shadow: var(--inner-shadow);
     font-weight: bolder;
     transition: all ease-in-out 0.3s;
 }
@@ -140,21 +144,28 @@ select{
     border-radius: 100vw;
 }
 
+.btn-container{
+    display: flex;
+    flex-direction: column;
+}
 
-.btn{
+button{
     font-size: 1rem;
     border-radius: 100vw;
     background-color: white;
     box-shadow: 4px 4px 2px var(--dm-grey-01);
     /* border: solid 1px black; */
     padding: 0.25rem;
-    width: 7.5rem;
+    width: 10rem;
     cursor: pointer;
-    transition: all ease-in-out 0.3s;
+    margin: 0.5rem;
+    padding: 0.5rem;
+    transition: box-shadow ease-in-out 0.1s, background-color ease-in-out 0.3s, color ease-in-out 0.3s;
 }
-.btn:hover{
+button:active{
     box-shadow: 0px 0px 0px var(--dm-grey-01);
 }
+
 
 @font-face {
     font-family: 'Cabinet Grotesk Regular';
