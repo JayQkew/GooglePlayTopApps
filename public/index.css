@@ -53,6 +53,7 @@ td{
     height: 2rem;
     border-radius: 100vw;
     box-shadow: var(--inner-shadow);
+    transition: all ease-in-out 0.3s;
 }
 
 .progress{
@@ -60,7 +61,7 @@ td{
     justify-content: center;
     align-items: center;
     margin-inline: 0.5rem;
-    width: 100%;
+    width: 0%;
     height: 50%;
     border-radius: 100vw;
     background-color: rgb(107, 99, 249);
@@ -89,5 +90,5 @@ td{
 }
 
 .hidden{
-    display: none;
+    height: 0rem;
 }

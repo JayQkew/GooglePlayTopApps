@@ -5,6 +5,7 @@ import mysql from 'mysql2';
 
 const app = express();
 const PORT = 3000;
+const clients = [];
 
 app.use(cors());
 app.use(express.json());
@@ -23,11 +24,6 @@ db.connect((err) => {
     }
     console.log('connected to database');
 });
-
-updateDatabase();
-//getFindApkApps(500);
-//getAppDetails();
-//compareApps();
 
 async function autoScroll(page) {
     await page.evaluate(async () => {
@@ -90,13 +86,15 @@ async function compareApps(){
             }
         }
     })
+
+
 }
 
 //#region Database
 async function updateDatabase() {
     const browser = await puppeteer.launch({
         executablePath: '/usr/bin/chromium-browser',
-        headless: false,
+        headless: true,
     });
     const page = await browser.newPage();
 
@@ -124,7 +122,9 @@ async function updateDatabase() {
 
     const detailsPage = await browser.newPage();
 
-    for(const app of topFreeApps) {
+    for (let i = 0; i < topFreeApps.length; i++) {
+        const app = topFreeApps[i];
+
         await detailsPage.goto(app.link, { 
             waitUntil: 'networkidle0',
             timeout: 60000
@@ -168,6 +168,7 @@ async function updateDatabase() {
                 addAppData(app);
             }
         });
+        sendProgressUpdate({ current: i + 1, total: topFreeApps.length });
 
         await new Promise(r => setTimeout(r, 20000));
     }
@@ -175,6 +176,8 @@ async function updateDatabase() {
     console.log('Top Free App: ', topFreeApps);
 
     await browser.close();
+
+    sendProgressUpdate({ current: topFreeApps.length, total: topFreeApps.length});
 }
 
 function checkExistingApps(packageName, callback){
@@ -232,13 +235,13 @@ async function getAppDetails(){
 //#endregion
 
 //#region GET Requests
-app.get('/top-free', async (req, res) => {
+app.get('/update-database', async (req, res) => {
     try{
-
-
+        updateDatabase().catch(err => console.error("Error in updateDatabase:", err));
+        res.json({ success: true, message: "Database update started" });
     } catch (err){
         console.error("Error in search: ", err);
-        res.status(500).json({ success: false, message: "Server error" });
+        res.status(500).json({ success: false, message: "Database update ERROR" });
     }
 })
 //#endregion
@@ -323,6 +326,26 @@ app.post('/packageSearch', async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 })
+//#endregion
+
+//#region WEB-SOCKETS
+app.get('/db-update-progress', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    clients.push(res);
+
+    req.on('close', () => {
+        clients.splice(clients.indexOf(res), 1);
+    })
+})
+
+function sendProgressUpdate(progress) {
+    clients.forEach(client => {
+        client.write(`data: ${JSON.stringify(progress)}\n\n`);
+    });
+}
 //#endregion
 
 app.listen(PORT, () => {
