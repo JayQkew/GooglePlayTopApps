@@ -24,36 +24,20 @@ db.connect((err) => {
     console.log('connected to database');
 });
 
-(async () => {
+//updateDatabase();
+//getFindApkApps(500);
+getAppDetails();
+
+async function updateDatabase() {
     const browser = await puppeteer.launch({
         executablePath: '/usr/bin/chromium-browser',
         headless: false,
     });
     const page = await browser.newPage();
 
-    await page.goto('https://appfigures.com/top-apps/google-play/united-states/top-overall', {
+    await page.goto('https://appfigures.com/top-apps/google-play/south-africa/top-overall', {
         waitUntil: 'networkidle0'
     });
-
-    async function autoScroll(page) {
-        await page.evaluate(async () => {
-            await new Promise((resolve) => {
-                let totalHeight = 0;
-                const distance = 250;
-                const pageLength = 13000;
-
-                const timer = setInterval(() => {
-                    window.scrollBy(0, distance);
-                    totalHeight += distance;
-                    console.log('total height: ' + totalHeight);
-                    if (totalHeight >= pageLength) {
-                        clearInterval(timer);
-                        resolve();
-                    }
-                }, 100);
-            });
-        });
-    }
 
     await autoScroll(page);
 
@@ -70,19 +54,8 @@ db.connect((err) => {
                 lastUpdated: ''
             }));
         })
-
         return freeApps;
     });
-
-    // const chunkSize = 50;
-    // let appChunks = [];
-
-    //slices the apps into chunkc for processing speed
-    // for(let i = 0; i < topFreeApps.length; i += chunkSize){
-    //     appChunks.push(topFreeApps.slice(i, i + chunkSize));
-    // }
-
-    // const pages = await Promise.all(appChunks.map(() => browser.newPage()));
 
     const detailsPage = await browser.newPage();
 
@@ -109,7 +82,7 @@ db.connect((err) => {
             
             const match = dateEl.innerText.match(/\((.*?)\)/);
             const dateText = match ? match[1] : null;
-            
+
             return {
                 packageName: packageNameEl ? packageNameEl.innerText.trim() : '',
                 version: versionEl ? versionEl.innerText.trim() : '',
@@ -123,14 +96,10 @@ db.connect((err) => {
 
         console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t App ID: ${app.packageName} \n\t Last Updated: ${app.lastUpdated}`);
 
-        //load data onto database
-        //check if app already exists
         checkExistingApps(app.packageName, (found) => {
             if(found){
-                //update the version on the db
                 updateAppData(app.packageName, app.version, app.lastUpdated);
             } else {
-                //add a new row of data
                 addAppData(app);
             }
         });
@@ -138,141 +107,137 @@ db.connect((err) => {
         await new Promise(r => setTimeout(r, 20000));
     }
 
-    function checkExistingApps(packageName, callback){
-        const query = 'SELECT COUNT(*) AS count FROM app_details WHERE package_name = ?';
-
-        db.execute(query, [packageName], (err, results) => {
-            if (err) {
-                console.error('Error querying the database: ', err);
-                return;
-            }
-
-            if (results[0].count > 0){
-                console.log('App *' + packageName + '* exists');
-                callback(true);
-            } else{
-                console.log('App *' + packageName + '* DOESNT exist');
-                callback(false);
-            }
-        });
-    }
-
-    function updateAppData(packageName, newVersion, newDate){
-        const query = `UPDATE app_details SET version = ?, last_updated = ? WHERE package_name = ?`;
-
-        db.execute(query, [newVersion, newDate, packageName], (err, results) => {
-            if(err){
-                console.error('Error update user: ',  err);
-                return;
-            }
-
-            console.log('App *' + packageName + '* was updated');
-        });
-    }
-
-    function addAppData(app){
-        const query = 'INSERT INTO app_details (name, package_name, version, last_updated) VALUES (?, ?, ?, ?)';
-        db.query(query, [app.name, app.packageName, app.version, app.lastUpdated], (err, result) => {
-            if(err) {
-                console.error('Database Error: ', err);
-                return;
-            }
-            console.log('App *' + app.name + '* added to database');
-        });
-    }
-
-    // // Process each chunk in a separate tab
-    // await Promise.all(
-    //     pages.map(async (tab, index) => {
-    //         const apps = appChunks[index] || [];
-    //         for (const app of apps) {
-    //             console.log(`Tab ${index + 1} visiting: ${app.name}`);
-    //             await tab.goto(app.link, { waitUntil: 'networkidle0' });
-                
-    //             const updatedApp = await tab.evaluate(() => {
-    //                 const packageNameEl = document.querySelector('.s-1674543659-0.s1901059984-1');
-                    
-    //                 const versionEl = document.querySelectorAll('.s-400240423-0.s-533381810-1');                
-    //                 return {
-    //                     packageName: packageNameEl ? packageNameEl.innerText.trim() : '',
-    //                     version: versionEl[16] ? versionEl[16].innerText.trim() : ''
-    //                 };
-    //             }, app);
-                
-    //             app.packageName = updatedApp.packageName;
-    //             app.version = updatedApp.version;
-
-    //             console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t App ID: ${app.packageName}`);
-                
-    //             await new Promise(r => setTimeout(r, 60000)); // Delay between URLs
-    //         }
-    //     })
-    // );
-
     console.log('Top Free App: ', topFreeApps);
 
     await browser.close();
-})();
+}
 
-// const browser = await puppeteer.launch({
-//     executablePath: '/usr/bin/chromium-browser',
-//     headless: false, 
-//     args: [
-//     '--incognito',
-//     '--no-sandbox'
-//   ]});
+async function autoScroll(page) {
+    await page.evaluate(async () => {
+        await new Promise((resolve) => {
+            let totalHeight = 0;
+            const distance = 500;
+            const pageLength = 13000;
 
-// (async () => {
-//     const browser = await puppeteer.launch();
-//     const page = await browser.newPage();
+            const timer = setInterval(() => {
+                window.scrollBy(0, distance);
+                totalHeight += distance;
+                console.log('total height: ' + totalHeight);
+                if (totalHeight >= pageLength) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 500);
+        });
+    });
+}
 
-//     await page.goto('https://www.luno.com/en/price/BTC', 
-//         {
-//             waitUntil: 'networkidle0',
-//           }
-//     );
+async function getFindApkApps(numApps){
+    try{
+        const res = await fetch(`https://findapk.co.za/api/v1/app/get-app-details/petal?page=1&limit=${numApps}`, {
+            method: 'GET',
+            headers: { "Content-Type": "application/json" }
+        });
+
+        if(!res.ok){
+            throw new Error('Failed to get apps');
+        }
+
+        console.log('POST OK');
+        const findApkApps = await res.json();
+        const apps = findApkApps.applications;
+
+        let prevNum = 1;
+        let currApp;
+        const filteredApps = apps.filter(app => {
+            if(app.num == prevNum){
+                currApp = app;
+                prevNum = app.num;
+            } else{
+                //add this new one to the filtered apps
+                const oldApp = currApp;
+                currApp = app;
+                prevNum = app.num;
+                return oldApp;
+            }
+        });
+
+        return filteredApps;
+    } catch (err){
+        console.error("Error Getting Apps ", err);
+        return null;
+    }
+}
+
+//#region Database
+function checkExistingApps(packageName, callback){
+    const query = 'SELECT COUNT(*) AS count FROM app_details WHERE package_name = ?';
+
+    db.execute(query, [packageName], (err, results) => {
+        if (err) {
+            console.error('Error querying the database: ', err);
+            return;
+        }
+
+        if (results[0].count > 0){
+            console.log('App *' + packageName + '* exists');
+            callback(true);
+        } else{
+            console.log('App *' + packageName + '* DOESNT exist');
+            callback(false);
+        }
+    });
+}
+
+function updateAppData(packageName, newVersion, newDate){
+    const query = `UPDATE app_details SET version = ?, last_updated = ? WHERE package_name = ?`;
+
+    db.execute(query, [newVersion, newDate, packageName], (err, results) => {
+        if(err){
+            console.error('Error update user: ',  err);
+            return;
+        }
+
+        console.log('App *' + packageName + '* was updated');
+    });
+}
+
+function addAppData(app){
+    const query = 'INSERT INTO app_details (name, package_name, version, last_updated) VALUES (?, ?, ?, ?)';
+    db.query(query, [app.name, app.packageName, app.version, app.lastUpdated], (err, result) => {
+        if(err) {
+            console.error('Database Error: ', err);
+            return;
+        }
+        console.log('App *' + app.name + '* added to database');
+    });
+}
+
+async function getAppDetails(){
+    try{
+        const [rows] = await db.promise().query('SELECT * FROM app_details');
+        console.log(rows);
+        return rows;
+    } catch (err) {
+        console.error('Error fetching app details: ', err);
+        return [];
+    }
+}
+//#endregion
+
+//#region GET Requests
+app.get('/top-free', async (req, res) => {
+    try{
 
 
-//     const inputId = '#mat-input-1';
-//     try {
-//         // Wait for the input element to be present
-//         await page.waitForSelector(inputId);
-    
-//         // Set the input value and trigger Angular's change detection
-//         await page.evaluate((selector) => {
-//           const input = document.querySelector(selector);
-//         //   if (input) {
-//         //     // input.value = 'My Value with ID';
-//         //     input.dispatchEvent(new Event('input'));
-//         //   }
-//          console.log(input);
-//         }, inputId);
-    
-//         // Verify the input value
-//         const inputValue = await page.$eval(inputId, (el) => el.value);
-//         console.log('Input Value:', inputValue);
-    
-//       } catch (error) {
-//         console.error('Error interacting with input:', error);
-//       }
+    } catch (err){
+        console.error("Error in search: ", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+})
+//#endregion
 
-
-//       browser.close();
-
-//     // setInterval(async () => {
-//     //     const amount = await page.evaluate(() => {
-//     //         const element = document.getElementById('mat-input-1');
-//     //         return element;
-//     //     });
-//     //     console.log(amount);
-//     //     browser.close();
-//     // }, 10000)
-
-
-
-
-// });
-
+//#region POST Requests
 app.post("/topApps", async (req, res) => {
     try {
         const { category, collection, numApps, language, country } = req.body;
@@ -289,23 +254,9 @@ app.post("/topApps", async (req, res) => {
                 throttle: 10
             }
         );
-
-        const appDetails = await Promise.all(topApps.map(app => getAppDetail(app.appId)));
-
-
         res.json(topApps);
     } catch (error) {
         console.log("ERROR: " + error)
-    }
-})
-
-app.get('/top-free', async (req, res) => {
-    try{
-
-
-    } catch (err){
-        console.error("Error in search: ", err);
-        res.status(500).json({ success: false, message: "Server error" });
     }
 })
 
@@ -366,14 +317,7 @@ app.post('/packageSearch', async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 })
-
-async function getAppDetail(appID) {
-    return gplay.search({ 
-        term: appID,
-        num: 1,
-        fullDetail: 'true'
-     });
-}
+//#endregion
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
