@@ -72,24 +72,6 @@ async function getFindApkApps(numApps){
     }
 }
 
-async function compareApps(){
-    const dbApps = await getAppDetails();
-    const findApkApps = await getFindApkApps(500);
-    const needUpdateApps = dbApps.filter(app => {
-        const findApkApp = findApkApps.find(a => a.packageName == app.package_name);
-        if(findApkApp) {
-            if(findApkApp.versionName != app.version){
-                console.log('App: '+ app.name);
-                console.log('\t db: '+ app.version);
-                console.log('\t findApk: '+ findApkApp.versionName);
-                return findApkApp;
-            }
-        }
-    })
-
-
-}
-
 //#region Database
 async function updateDatabase() {
     const browser = await puppeteer.launch({
@@ -223,7 +205,7 @@ function addAppData(app){
     });
 }
 
-async function getAppDetails(){
+async function getDbApps(){
     try{
         const [rows] = await db.promise().query('SELECT * FROM app_details');
         return rows;
@@ -242,6 +224,26 @@ app.get('/update-database', async (req, res) => {
     } catch (err){
         console.error("Error in search: ", err);
         res.status(500).json({ success: false, message: "Database update ERROR" });
+    }
+});
+
+app.get('/db-apps', async (req, res) => {
+    try{
+        const dbApps = await getDbApps();
+        res.json({success: true, data: dbApps});
+    } catch (err){
+        console.error('Error getting db apps: ', err);
+        res.status(500).json({success: false, message: 'Couldnt get apps from database'});
+    }
+});
+
+app.get('/findApk-apps', async (req, res) => {
+    try{
+        const findApkApps = await getFindApkApps(500);
+        res.json({success: true, data: findApkApps});
+    } catch (err){
+        console.error('Error getting findApk apps: ', err);
+        res.status(500).json({success: false, message: 'Couldnt get findApk apps'});
     }
 })
 //#endregion

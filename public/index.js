@@ -1,11 +1,31 @@
 const eventSource = new EventSource('http://localhost:3000/db-update-progress');
 const updateDatabaseBtn = document.querySelector('.update-database');
-const progressBar = document.querySelector('.progress-bar')
+const progressBar = document.querySelector('.progress-bar');
+const generateTableBtn = document.querySelector('.generate-table');
 
 updateDatabaseBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     progressBar.classList.remove('hidden');
     await updateDatabase();
+})
+
+generateTableBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const dbApps = await getDbApps();
+    const findApkApps = await getFindApkApps();
+    // loop through dbApps and make a new array that has dbApps with findApk apps
+    const allApps = dbApps.map(app => {
+        const findApk = findApkApps.find(a => a.packageName == app.package_name);
+        return {
+            name: app.name,
+            packageName: app.package_name,
+            lastUpdated: app.last_updated ? app.last_updated : 'new release',
+            gpVersion: app.version,
+            findApkVersion: findApk ? findApk.versionName : null
+        }
+    });
+
+    generateTable(allApps);
 })
 
 eventSource.onmessage = (e) => {
@@ -20,25 +40,40 @@ eventSource.onmessage = (e) => {
     
     if (res.current === res.total) {
         console.log("Update Complete!");
+        progressBar.classList.add('hidden');
         eventSource.close();
     }
 }
 
-
-document.getElementById('appForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    getTopApps();
-});
-
 async function updateDatabase(){
     try {
-        console.log('requesting update database');
-        const res = await fetch("/update-database")
+        const res = await fetch("/update-database");
 
         if(!res.ok) throw new Error('Failed to update database');
-        console.log('updating database START!')
     } catch (error) {
         console.error("Error updating database:", error);
+    }
+}
+
+async function getDbApps(){
+    try {
+        const res = await fetch('/db-apps');
+        if(!res.ok) throw new Error('Failed to get db apps');
+        const data = await res.json();
+        return data.data;
+    } catch (error){
+        console.error("Error getting database apps: ", error);
+    }
+}
+
+async function getFindApkApps(){
+    try{
+        const res = await fetch('/findApk-apps');
+        if(!res.ok) throw new Error('Failed to get findApk apps');
+        const data = await res.json();
+        return data.data;
+    } catch (error){
+        console.error('Error getting findApk apps: ', error);
     }
 }
 
