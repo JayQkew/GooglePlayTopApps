@@ -1,76 +1,18 @@
 import express from 'express';
 import cors from 'cors';
 import puppeteer from 'puppeteer-core';
-import mysql from 'mysql2';
+import { createClient } from '@supabase/supabase-js'; // Import Supabase client
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3000;
 const clients = [];
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'gp_apps'
-});
-
-db.connect((err) => {
-    if(err){
-        throw err;
-    }
-    console.log('connected to database');
-});
-
-async function autoScroll(page) {
-    await page.evaluate(async () => {
-        await new Promise((resolve) => {
-            let totalHeight = 0;
-            const distance = 500;
-            const pageLength = 13000;
-
-            const timer = setInterval(() => {
-                window.scrollBy(0, distance);
-                totalHeight += distance;
-                console.log('total height: ' + totalHeight);
-                if (totalHeight >= pageLength) {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 500);
-        });
-    });
-}
-
-async function getFindApkApps(numApps){
-    try{
-        const res = await fetch(`https://findapk.co.za/api/v1/app/get-app-details/petal?page=1&limit=${numApps}`, {
-            method: 'GET',
-            headers: { "Content-Type": "application/json" }
-        });
-
-        if(!res.ok){
-            throw new Error('Failed to get apps');
-        }
-
-        console.log('POST OK');
-        const findApkApps = await res.json();
-        const apps = findApkApps.applications;
-
-        const filteredApps = Object.values(apps.reduce((acc, app) => {
-            acc[app.num] = app; // Always store the last app for each `num`
-            return acc;
-        }, {}));
-
-        return filteredApps;
-    } catch (err){
-        console.error("Error Getting Apps ", err);
-        return null;
-    }
-}
+// Initialize Supabase client
+const supabase = createClient(process.env.SUPABASE_API, process.env.SUPABASE_KEY);
 
 //#region Database
 async function updateDatabase() {
@@ -87,10 +29,10 @@ async function updateDatabase() {
     await autoScroll(page);
 
     const topFreeApps = await page.evaluate(() => {
-        const list = Array.from(document.querySelectorAll('.s1488507463-0')).filter((_,i) => i % 3 == 0)
+        const list = Array.from(document.querySelectorAll('.s1488507463-0')).filter((_, i) => i % 3 == 0)
 
-        let freeApps = Array.from(list).flatMap( li =>{
-            const appElements = li.querySelectorAll('.s-4262409-0'); // Update the selector if necessary
+        let freeApps = Array.from(list).flatMap(li => {
+            const appElements = li.querySelectorAll('.s-4262409-0');
             return Array.from(appElements).map(_app => ({
                 name: _app.innerText.substring(_app.innerText.indexOf(' ') + 1).trim(),
                 link: _app.href,
@@ -159,60 +101,75 @@ async function updateDatabase() {
 
     await browser.close();
 
-    sendProgressUpdate({ current: topFreeApps.length, total: topFreeApps.length});
+    sendProgressUpdate({ current: topFreeApps.length, total: topFreeApps.length });
 }
 
-function checkExistingApps(packageName, callback){
-    const query = 'SELECT COUNT(*) AS count FROM app_details WHERE package_name = ?';
+async function checkExistingApps(packageName, callback) {
+    const { data, error } = await supabase
+        .from('app_details')
+        .select('package_name')
+        .eq('package_name', packageName)
+        .single(); // Get one result
 
-    db.execute(query, [packageName], (err, results) => {
-        if (err) {
-            console.error('Error querying the database: ', err);
-            return;
-        }
+    if (error) {
+        console.error('Error checking app: ', error);
+        return;
+    }
 
-        if (results[0].count > 0){
-            console.log('App *' + packageName + '* exists');
-            callback(true);
-        } else{
-            console.log('App *' + packageName + '* DOESNT exist');
-            callback(false);
-        }
-    });
+    if (data) {
+        console.log('App *' + packageName + '* exists');
+        callback(true);
+    } else {
+        console.log('App *' + packageName + '* DOESNT exist');
+        callback(false);
+    }
 }
 
-function updateAppData(packageName, newVersion, newDate){
-    const query = `UPDATE app_details SET version = ?, last_updated = ? WHERE package_name = ?`;
+async function updateAppData(packageName, newVersion, newDate) {
+    const { data, error } = await supabase
+        .from('app_details')
+        .update({ version: newVersion, last_updated: newDate })
+        .eq('package_name', packageName);
 
-    db.execute(query, [newVersion, newDate, packageName], (err, results) => {
-        if(err){
-            console.error('Error update user: ',  err);
-            return;
-        }
+    if (error) {
+        console.error('Error updating app: ', error);
+        return;
+    }
 
-        console.log('App *' + packageName + '* was updated');
-    });
+    console.log('App *' + packageName + '* was updated');
 }
 
-function addAppData(app){
-    const query = 'INSERT INTO app_details (name, package_name, version, last_updated) VALUES (?, ?, ?, ?)';
-    db.query(query, [app.name, app.packageName, app.version, app.lastUpdated], (err, result) => {
-        if(err) {
-            console.error('Database Error: ', err);
-            return;
-        }
-        console.log('App *' + app.name + '* added to database');
-    });
+async function addAppData(app) {
+    const { data, error } = await supabase
+        .from('app_details')
+        .insert([
+            {
+                name: app.name,
+                package_name: app.packageName,
+                version: app.version,
+                last_updated: app.lastUpdated
+            }
+        ]);
+
+    if (error) {
+        console.error('Error inserting app data: ', error);
+        return;
+    }
+
+    console.log('App *' + app.name + '* added to database');
 }
 
-async function getDbApps(){
-    try{
-        const [rows] = await db.promise().query('SELECT * FROM app_details');
-        return rows;
-    } catch (err) {
-        console.error('Error fetching app details: ', err);
+async function getDbApps() {
+    const { data, error } = await supabase
+        .from('app_details')
+        .select('*');
+
+    if (error) {
+        console.error('Error fetching app details: ', error);
         return [];
     }
+
+    return data;
 }
 //#endregion
 
@@ -351,5 +308,5 @@ function sendProgressUpdate(progress) {
 //#endregion
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on Port ${PORT}`);
 });
