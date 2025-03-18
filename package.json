@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
-    "postinstall": "apt-get update && apt-get install -y chromium"
+    "postinstall": "apt-get update && apt-get install -y chromium",
+    "start": "node app.js"
   },
   "author": "",
   "license": "ISC",
