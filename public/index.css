@@ -82,6 +82,16 @@ td{
     color: white;
 }
 
+.generate-table:hover{
+    background-color: var(--blue-01);
+    color: white;
+}
+
+.download-table:not(:disabled):hover{
+    background-color: var(--blue-01);
+    color: white;
+}
+
 .progress p{
     background-color: transparent;
     color: white;

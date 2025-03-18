@@ -55,49 +55,6 @@ a:visited{
     color: var(--dm-grey-03);
 }
 
-nav ul{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    list-style: none;
-    gap: 2rem;
-    padding: 0rem;
-    margin: 2rem;
-}
-
-nav ul li a{
-    text-decoration: none;
-    padding-block: 0.5rem;
-    padding-inline: 1rem;
-    font-weight: 500;
-    color: var(--dm-grey-03);
-    
-    transition: all ease-in-out 0.3s;
-}
-nav ul li a:visited{
-    color: var(--dm-grey-03);
-    
-}
-nav ul li a:hover{
-    background-color: white;
-    border-radius: 100vw;
-    box-shadow: var(--inner-shadow);
-
-}
-
-.current-page{
-    background-color: white;
-    border-radius: 100vw;
-    box-shadow: var(--inner-shadow);
-    font-weight: bolder;
-    transition: all ease-in-out 0.3s;
-}
-.current-page:hover{
-    background-color: var(--dm-grey-02);
-    box-shadow: 0px 0px 0px inset var(--dm-grey-01);
-}
-
 main{
     display: flex;
     justify-content: center;
@@ -106,7 +63,6 @@ main{
     gap: 2rem;
     width: 100%;
 }
-
 
 form{
     display: flex;
@@ -127,29 +83,21 @@ form{
     gap: 0.5rem;
 }
 
-.num-input{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    text-align: center;
-    border: solid 1px black;
-    border-radius: 100vw;
-    padding: 0.25rem;
-    width: 5rem;
-}
-
-select{
-    padding: 0.25rem;
-    border: solid 1px black;
-    border-radius: 100vw;
-}
-
 .btn-container{
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+#app-search-bar{
+    background-color: white;
+    width: 25rem;
+    border-radius: 100vw;
+    text-align: center;
+    padding: 0.5rem;
+    font-weight: bold;
+    box-shadow: var(--inner-shadow);
 }
 
 button{
