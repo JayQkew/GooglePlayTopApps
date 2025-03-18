@@ -64,7 +64,7 @@ td{
     width: 0%;
     height: 50%;
     border-radius: 100vw;
-    background-color: rgb(107, 99, 249);
+    background-color: var(--blue-01);
     box-shadow: var(--outer-shadow);
     overflow: hidden;
     transition: all ease-in-out 0.3s;
@@ -78,7 +78,7 @@ td{
     background-color: white;
 }
 .update-database:hover{
-    background-color: rgb(107, 99, 249);
+    background-color: var(--blue-01);
     color: white;
 }
 
@@ -89,6 +89,57 @@ td{
     text-align: center;
 }
 
-.hidden{
+.table-btns{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.filter-btns{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-block: 1rem;
+    overflow: hidden;
+    height: 4rem;
+    transition: all ease-in-out 0.3s;
+}
+
+.filter-btns-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    height: 100%;
+}
+
+.filter-btns-container button{
+    font-size: 0.7rem;
+    width: 7.5rem;
+    height: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all ease-in-out 0.3s;
+}
+.filter-btns-container button:hover{
+    background-color: rgb(107, 99, 249);
+    color: white;
+}
+
+
+.selected-filter{
+    background-color: rgb(107, 99, 249);
+    color: white;
+    box-shadow: 0px 0px 0px inset var(--dm-grey-01);
+}
+
+h2{
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.hidden-v{
     height: 0rem;
 }

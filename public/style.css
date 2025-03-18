@@ -6,6 +6,7 @@
     --dm-grey-01: #e0e1dd;
     --dm-grey-02: #f0f0f0;
     --dm-grey-03: #4a4a4a;
+    --blue-01: rgb(107, 99, 249);
 
     --inner-shadow: 4px 4px 2px inset var(--dm-grey-01);
     --no-shadow: 0px 0px 0px var(--dm-grey-01);
@@ -147,6 +148,8 @@ select{
 .btn-container{
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 button{
@@ -165,7 +168,10 @@ button{
 button:active{
     box-shadow: 0px 0px 0px var(--dm-grey-01);
 }
-
+button:disabled{
+    box-shadow: 0px 0px 0px var(--dm-grey-01);
+    background-color: var(--dm-grey-02);
+}
 
 @font-face {
     font-family: 'Cabinet Grotesk Regular';

@@ -2,19 +2,30 @@ const eventSource = new EventSource('http://localhost:3000/db-update-progress');
 const updateDatabaseBtn = document.querySelector('.update-database');
 const progressBar = document.querySelector('.progress-bar');
 const generateTableBtn = document.querySelector('.generate-table');
+const downloadBtn = document.querySelector('.download-table');
+const filterBtnContainer = document.querySelector('.filter-btns-container');
+
+const filterBtns = document.querySelectorAll('.filter-btns-container > button');
+const onfindApkFilterBtn = document.getElementById('.on-findApk');
+const requireUpdateFilterBtn = document.getElementById('.require-update');
+const removeFilterBtn = document.getElementById('.remove-fiters');
+
+let allApps;
+let fapkApps;
 
 updateDatabaseBtn.addEventListener('click', async (e) => {
     e.preventDefault();
-    progressBar.classList.remove('hidden');
+    progressBar.classList.remove('hidden-v');
     await updateDatabase();
 })
 
 generateTableBtn.addEventListener('click', async (e) => {
     e.preventDefault();
+
     const dbApps = await getDbApps();
     const findApkApps = await getFindApkApps();
     // loop through dbApps and make a new array that has dbApps with findApk apps
-    const allApps = dbApps.map(app => {
+    allApps = dbApps.map(app => {
         const findApk = findApkApps.find(a => a.packageName == app.package_name);
         return {
             name: app.name,
@@ -25,8 +36,12 @@ generateTableBtn.addEventListener('click', async (e) => {
         }
     });
 
+    fapkApps = findApkFilter();
+
     generateTable(allApps);
 })
+
+downloadBtn.addEventListener('click', exportTableToExcel);
 
 eventSource.onmessage = (e) => {
     const res = JSON.parse(e.data);
@@ -40,10 +55,29 @@ eventSource.onmessage = (e) => {
     
     if (res.current === res.total) {
         console.log("Update Complete!");
-        progressBar.classList.add('hidden');
+        progressBar.classList.add('hidden-v');
         eventSource.close();
     }
 }
+
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        filterBtns.forEach(b => b.classList.remove('selected-filter'));
+        btn.classList.add('selected-filter');
+
+        if(btn.classList.contains('on-findApk')){
+            generateTable(fapkApps);
+            console.log('find apk filter pressed')
+        } else if (btn.classList.contains('require-update')){
+            generateTable(requireUpdateFilter());
+            console.log('require update filter pressed')
+        } else{
+            generateTable(allApps);
+            console.log('no filter pressed')
+        }
+    });
+});
 
 async function updateDatabase(){
     try {
@@ -77,80 +111,7 @@ async function getFindApkApps(){
     }
 }
 
-//#region OLD CODE
-async function getTopApps(){
-    const formData = getFormData();
-
-    try {
-        console.log("Post start")
-        const res = await fetch("/topApps", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData)
-        });
-
-        if(!res.ok){
-            throw new Error("Failed to download file");
-        }
-
-        console.log("POST OK")
-        const topApps = await res.json();
-        console.log(topApps);
-        const filteredApps = topApps.filter(app => {
-            const timeStamp = new Date(app.updated);
-            return filterDate(timeStamp, new Date(formData.startDate), new Date(formData.endDate));
-        });
-
-        const specifiedData = filteredApps.map(app => {
-            const formattedDate = new Intl.DateTimeFormat('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: '2-digit'
-            }).format(new Date(app.updated)); // Format date properly
-    
-            return {
-                Title: app.title,
-                AppID: app.appId,
-                Updated: formattedDate,
-                Version: app.version,
-                Url: app.url
-            };
-        })
-
-        console.log("Table generation start");
-        generateTable(specifiedData);
-        console.log("Table generation end");
-
-        const downloadBtn = document.querySelector('.download');
-        downloadBtn.classList.remove('hidden');
-
-    } catch (error) {
-        console.error("Error submitting form:", error);
-        return null;
-    }
-
-}
-
-function filterDate(date, start, end) {
-    // Convert input to Date objects
-    date = new Date(date);
-    start = start ? new Date(start) : null;
-    end = end ? new Date(end) : null;
-
-    // If `date` is invalid, return true (allow it to pass through)
-    if (isNaN(date.getTime())) {
-        console.warn("Warning: Invalid date detected, allowing through.");
-        return true;
-    }
-
-    // If start or end is invalid, treat them as "no filter"
-    const isStartValid = start && !isNaN(start.getTime());
-    const isEndValid = end && !isNaN(end.getTime());
-
-    // Apply filtering logic
-    return (!isStartValid || date >= start) && (!isEndValid || date <= end);
-}
-
+//#region Table Functions
 function generateTable(data) {
     const table = document.getElementById('top-apps-table');
     table.innerHTML = '';
@@ -162,7 +123,8 @@ function generateTable(data) {
 
     cols.forEach((c, index) => {
         const th = document.createElement('th');
-        th.textContent = c;
+        const formattedc = c.replace(/([A-Z])/g, ' $1').trim();
+        th.textContent = formattedc.charAt(0).toUpperCase() + formattedc.slice(1);
         th.setAttribute('data-column', c);
         th.setAttribute('data-order', 'desc');
 
@@ -204,6 +166,8 @@ function generateTable(data) {
     });
 
     table.appendChild(tbody);
+    document.querySelector('.download-table').disabled = false;
+    document.querySelector('.filter-btns').classList.remove('hidden-v');
 }
 
 function exportTableToExcel(){
@@ -234,8 +198,6 @@ function exportTableToExcel(){
 
     XLSX.writeFile(wb, `top_apps_${Date.now()}.xlsx`);
 }
-
-document.querySelector('.download').addEventListener('click', exportTableToExcel);
 
 function sortTableByColumn(table, columnIndex, header) {
     const tbody = table.querySelector('tbody');
@@ -270,4 +232,22 @@ function sortTableByColumn(table, columnIndex, header) {
     rows.forEach(row => tbody.appendChild(row));
 }
 
+function findApkFilter(){
+    const filteredApps = allApps.filter(app => {
+        if(app.findApkVersion != null) return app;
+    });
+    return filteredApps;
+}
+
+function requireUpdateFilter(){
+    const filteredApps = fapkApps.filter(app => {
+        if(app.gpVersion != app.findApkVersion) return app;
+    });
+    return filteredApps;
+}
+
+function noFilter(){
+    return allApps;
+}
 //#endregion
+

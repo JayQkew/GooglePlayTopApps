@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer-core';
 import mysql from 'mysql2';
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 const clients = [];
 
 app.use(cors());

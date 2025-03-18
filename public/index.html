@@ -33,7 +33,7 @@
         </form> -->
         <article class="container">
             <section class="progress-bar-container">
-                <div class="progress-bar hidden">
+                <div class="progress-bar hidden-v">
                     <div class="progress">
                         <p>100%</p>
                     </div>
@@ -41,7 +41,18 @@
             </section>
             <section class="btn-container">
                 <button class="btn update-database">Update Database</button>
-                <button class="btn generate-table">Generate Table</button>
+                <div class="table-btns">
+                    <button class="generate-table">Generate Table</button>
+                    <button class="download-table" disabled>Download Table</button>
+                </div>
+                <div class="filter-btns hidden-v">
+                    <h2>Filters</h2>
+                    <div class="filter-btns-container">
+                        <button class="on-findApk">On FindApk</button>
+                        <button class="require-update">Require Updates</button>
+                        <button class="remove-filters">No Filter</button>
+                    </div>
+                </div>
             </section>
         </article>
         <div class="table-container">
