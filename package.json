@@ -18,7 +18,7 @@
     "google-play-scraper": "^10.0.1",
     "mysql2": "^3.13.0",
     "node-fetch": "^3.3.2",
-    "puppeteer": "^24.4.0",
+    "puppeteer-core": "^24.4.0",
     "xlsx": "^0.18.5"
   }
 }

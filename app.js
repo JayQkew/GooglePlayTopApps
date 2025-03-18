@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 import chrome from 'chrome-aws-lambda';
 import { createClient } from '@supabase/supabase-js';
 
@@ -65,8 +65,10 @@ async function getFindApkApps(numApps){
 //#region Database
 async function updateDatabase() {
     const browser = await puppeteer.launch({
-        headless: true, // Run in headless mode
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        executablePath: await chrome.executablePath,  // Use the executable path from chrome-aws-lambda
+        headless: chrome.headless,
+        args: chrome.args,  // Required arguments for headless Chrome
+        defaultViewport: chrome.defaultViewport,  // Default viewport size
     });
     const page = await browser.newPage();
 
