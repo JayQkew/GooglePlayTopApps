@@ -65,10 +65,8 @@ async function getFindApkApps(numApps){
 //#region Database
 async function updateDatabase() {
     const browser = await puppeteer.launch({
-        executablePath: await chrome.executablePath,  // Use chrome-aws-lambda to get the correct path
-        headless: chrome.headless,  // Use the headless setting from chrome-aws-lambda
-        args: chrome.args,  // Additional args required for headless mode
-        defaultViewport: chrome.defaultViewport,  // Optional, but can help with setting viewports in Render's environment
+        headless: true, // Run in headless mode
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
 
