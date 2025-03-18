@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 import chrome from 'chrome-aws-lambda';
 import { createClient } from '@supabase/supabase-js';
 
