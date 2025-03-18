@@ -14,6 +14,53 @@ app.use(express.static('public'));
 // Initialize Supabase client
 const supabase = createClient(process.env.SUPABASE_API, process.env.SUPABASE_KEY);
 
+async function autoScroll(page) {
+    await page.evaluate(async () => {
+        await new Promise((resolve) => {
+            let totalHeight = 0;
+            const distance = 500;
+            const pageLength = 13000;
+
+            const timer = setInterval(() => {
+                window.scrollBy(0, distance);
+                totalHeight += distance;
+                console.log('total height: ' + totalHeight);
+                if (totalHeight >= pageLength) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 500);
+        });
+    });
+}
+
+async function getFindApkApps(numApps){
+    try{
+        const res = await fetch(`https://findapk.co.za/api/v1/app/get-app-details/petal?page=1&limit=${numApps}`, {
+            method: 'GET',
+            headers: { "Content-Type": "application/json" }
+        });
+
+        if(!res.ok){
+            throw new Error('Failed to get apps');
+        }
+
+        console.log('POST OK');
+        const findApkApps = await res.json();
+        const apps = findApkApps.applications;
+
+        const filteredApps = Object.values(apps.reduce((acc, app) => {
+            acc[app.num] = app; // Always store the last app for each num
+            return acc;
+        }, {}));
+
+        return filteredApps;
+    } catch (err){
+        console.error("Error Getting Apps ", err);
+        return null;
+    }
+}
+
 //#region Database
 async function updateDatabase() {
     const browser = await puppeteer.launch({
