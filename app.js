@@ -66,9 +66,9 @@ async function getFindApkApps(numApps){
 async function updateDatabase() {
     const browser = await puppeteer.launch({
         executablePath: await chrome.executablePath,  // Use the executable path from chrome-aws-lambda
-        headless: chrome.headless,
-        args: chrome.args,  // Required arguments for headless Chrome
-        defaultViewport: chrome.defaultViewport,  // Default viewport size
+        headless: chrome.headless,                     // Ensure the browser runs in headless mode
+        args: chrome.args,                            // Use arguments for running in a cloud environment
+        defaultViewport: chrome.defaultViewport,      // Use the default viewport size for Puppeteer
     });
     const page = await browser.newPage();
 
