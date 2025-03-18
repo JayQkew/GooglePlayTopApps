@@ -1,4 +1,4 @@
-const eventSource = new EventSource('http://localhost:3000/db-update-progress');
+const eventSource = new EventSource('https://googleplaytopapps.onrender.com/db-update-progress');
 const updateDatabaseBtn = document.querySelector('.update-database');
 const progressBar = document.querySelector('.progress-bar');
 const generateTableBtn = document.querySelector('.generate-table');
@@ -81,7 +81,7 @@ filterBtns.forEach(btn => {
 
 async function updateDatabase(){
     try {
-        const res = await fetch("/update-database");
+        const res = await fetch("https://googleplaytopapps.onrender.com/update-database");
 
         if(!res.ok) throw new Error('Failed to update database');
     } catch (error) {
@@ -91,7 +91,7 @@ async function updateDatabase(){
 
 async function getDbApps(){
     try {
-        const res = await fetch('/db-apps');
+        const res = await fetch('https://googleplaytopapps.onrender.com/db-apps');
         if(!res.ok) throw new Error('Failed to get db apps');
         const data = await res.json();
         return data.data;
@@ -102,7 +102,7 @@ async function getDbApps(){
 
 async function getFindApkApps(){
     try{
-        const res = await fetch('/findApk-apps');
+        const res = await fetch('https://googleplaytopapps.onrender.com/findApk-apps');
         if(!res.ok) throw new Error('Failed to get findApk apps');
         const data = await res.json();
         return data.data;
