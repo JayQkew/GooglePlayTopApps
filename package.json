@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "postinstall": "npx puppeteer browsers install",
+    "postinstall": "npx puppeteer browsers install && npx chrome-aws-lambda@10.1.0 install",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js"
   },
