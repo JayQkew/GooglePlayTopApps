@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 import chrome from 'chrome-aws-lambda';
 import { createClient } from '@supabase/supabase-js';
 
@@ -64,12 +64,19 @@ async function getFindApkApps(numApps){
 
 //#region Database
 async function updateDatabase() {
-    const browser = await puppeteer.launch({
-        executablePath: await chrome.executablePath,  // Use the executable path from chrome-aws-lambda
-        headless: chrome.headless,                     // Ensure the browser runs in headless mode
-        args: chrome.args,                            // Use arguments for running in a cloud environment
-        defaultViewport: chrome.defaultViewport,      // Use the default viewport size for Puppeteer
+    let browser;
+    try {
+        browser = await puppeteer.launch({
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox'
+        ]
     });
+    } catch (err){
+        console.log('Could not create a browser instance : ', err);
+    }
+    
     const page = await browser.newPage();
 
     await page.goto('https://appfigures.com/top-apps/google-play/south-africa/top-overall', {

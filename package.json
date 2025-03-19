@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "postinstall": "npx puppeteer browsers install && npx chrome-aws-lambda@10.1.0 install",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "node app.js",
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "author": "",
   "license": "ISC",
@@ -18,7 +18,7 @@
     "google-play-scraper": "^10.0.1",
     "mysql2": "^3.13.0",
     "node-fetch": "^3.3.2",
-    "puppeteer-core": "^24.4.0",
+    "puppeteer": "^24.4.0",
     "xlsx": "^0.18.5"
   }
 }
