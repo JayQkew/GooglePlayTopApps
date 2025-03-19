@@ -4,7 +4,7 @@ set -o errexit
 
 # Install dependecies
 npm install
-npm run build
+# npm run build
 
 PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer
 mkdir -p $PUPPETEER_CACHE_DIR
