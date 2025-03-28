@@ -76,7 +76,7 @@ async function getFindApkApps(numApps){
 async function updateDatabase() {
     const browser = await puppeteer.launch({
         executablePath: '/usr/bin/chromium-browser',
-        headless: true,
+        headless: false,
     });
     const page = await browser.newPage();
 
