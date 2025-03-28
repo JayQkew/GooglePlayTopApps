@@ -1,14 +1,16 @@
 import express from 'express';
 import cors from 'cors';
 import puppeteer from 'puppeteer-core';
-import mysql from 'mysql2';
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv'
 
 const app = express();
 const PORT = 3001;
 
-const supabaseUrl = 'https://oiqnwmskqrfubdxthvkr.supabase.co'
-const supabaseKey = ''
+dotenv.config();
+
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_ANON_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 app.use(cors());
