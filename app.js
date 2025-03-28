@@ -2,28 +2,34 @@ import express from 'express';
 import cors from 'cors';
 import puppeteer from 'puppeteer-core';
 import mysql from 'mysql2';
+import { createClient } from '@supabase/supabase-js';
 
 const app = express();
 const PORT = 3001;
-const clients = [];
+
+const supabaseUrl = 'https://oiqnwmskqrfubdxthvkr.supabase.co'
+const supabaseKey = ''
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'gp_apps'
-});
+// const db = mysql.createConnection({
+//     host: 'localhost',
+//     user: 'root',
+//     password: 'root',
+//     database: 'gp_apps'
+// });
 
-db.connect((err) => {
-    if(err){
-        throw err;
-    }
-    console.log('connected to database');
-});
+// db.connect((err) => {
+//     if(err){
+//         throw err;
+//     }
+//     console.log('connected to database');
+// });
+
+updateDatabase();
 
 async function autoScroll(page) {
     await page.evaluate(async () => {
@@ -145,14 +151,13 @@ async function updateDatabase() {
 
         console.log(`App: ${app.name} \n\t Version: ${app.version} \n\t App ID: ${app.packageName} \n\t Last Updated: ${app.lastUpdated}`);
 
-        checkExistingApps(app.packageName, (found) => {
+        await checkExistingApps(app.packageName, async (found) => {
             if(found){
-                updateAppData(app.packageName, app.version, app.lastUpdated);
+                await updateAppData(app.packageName, app.version, app.lastUpdated);
             } else {
-                addAppData(app);
+                await addAppData(app);
             }
         });
-        sendProgressUpdate({ current: i + 1, total: topFreeApps.length });
 
         await new Promise(r => setTimeout(r, 20000));
     }
@@ -160,61 +165,73 @@ async function updateDatabase() {
     console.log('Top Free App: ', topFreeApps);
 
     await browser.close();
-
-    sendProgressUpdate({ current: topFreeApps.length, total: topFreeApps.length});
 }
 
-function checkExistingApps(packageName, callback){
-    const query = 'SELECT COUNT(*) AS count FROM app_details WHERE package_name = ?';
+async function checkExistingApps(packageName, callback){
+    console.log('checking ' + packageName)
 
-    db.execute(query, [packageName], (err, results) => {
-        if (err) {
-            console.error('Error querying the database: ', err);
-            return;
-        }
+    const {data, error} = await supabase
+        .from('app_details')
+        .select('count')
+        .eq('package_name', packageName)
 
-        if (results[0].count > 0){
-            console.log('App *' + packageName + '* exists');
-            callback(true);
-        } else{
-            console.log('App *' + packageName + '* DOESNT exist');
-            callback(false);
-        }
-    });
+    if (error) {
+        console.error('Error querying the database: ', error);
+        return;
+    }
+
+    if (data[0].count > 0){
+        console.log('App *' + packageName + '* exists');
+        callback(true);
+    } else{
+        console.log('App *' + packageName + '* DOESNT exist');
+        callback(false);
+    }
 }
 
-function updateAppData(packageName, newVersion, newDate){
-    const query = `UPDATE app_details SET version = ?, last_updated = ? WHERE package_name = ?`;
+async function updateAppData(packageName, newVersion, newDate){
+    const { data, error } = await supabase
+        .from('app_details')
+        .update({version: newVersion, last_updated: newDate})
+        .eq('package_name', packageName)
 
-    db.execute(query, [newVersion, newDate, packageName], (err, results) => {
-        if(err){
-            console.error('Error update user: ',  err);
-            return;
-        }
-
-        console.log('App *' + packageName + '* was updated');
-    });
+    if(error){
+        console.error('Error update user: ',  error);
+        return;
+    }
+    console.log('App *' + packageName + '* was updated');
 }
 
-function addAppData(app){
-    const query = 'INSERT INTO app_details (name, package_name, version, last_updated) VALUES (?, ?, ?, ?)';
-    db.query(query, [app.name, app.packageName, app.version, app.lastUpdated], (err, result) => {
-        if(err) {
-            console.error('Database Error: ', err);
-            return;
-        }
-        console.log('App *' + app.name + '* added to database');
-    });
+async function addAppData(app){
+    const { data , error } = await supabase
+        .from('app_details')
+        .insert([
+            {
+                name: app.name,
+                package_name: app.packageName,
+                version: app.version,
+                last_updated: app.lastUpdated
+            }
+        ]);
+
+    if(error) {
+        console.error('Database Error: ', error);
+        return;
+    }
+    console.log('App *' + app.name + '* added to database');
 }
 
 async function getDbApps(){
-    try{
-        const [rows] = await db.promise().query('SELECT * FROM app_details');
-        return rows;
-    } catch (err) {
-        console.error('Error fetching app details: ', err);
+    const { data, error } = await supabase
+        .from('app_details')
+        .select('*');
+
+    if (error) {
+        console.error('Error fetching app details: ', error);
         return [];
     }
+
+    return data;
 }
 //#endregion
 
