@@ -73,6 +73,8 @@ async function getFindApkApps(numApps){
 }
 
 //#region Database
+
+//TODO: update database to supabase
 async function updateDatabase() {
     const browser = await puppeteer.launch({
         executablePath: '/usr/bin/chromium-browser',
