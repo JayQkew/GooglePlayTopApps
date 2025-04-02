@@ -31,6 +31,7 @@ app.use(express.static('public'));
 //     console.log('connected to database');
 // });
 
+updateFindApkApps()
 updateDatabase();
 
 async function autoScroll(page) {
@@ -66,11 +67,31 @@ async function getFindApkApps(numApps){
 
         console.log('POST OK');
         const findApkApps = await res.json();
-        const apps = findApkApps.applications;
+        const apps = findApkApps.applications ?? [];
 
-        const filteredApps = Object.values(apps.reduce((acc, app) => {
-            acc[app.num] = app; // Always store the last app for each `num`
-            return acc;
+        function isNewerVersion(v1, v2){
+            console.log("v1 :" +v1);
+            console.log("v2 :" +v2);
+            const splitV1 = v1.split('.').map(Number);
+            const splitV2 = v2.split('.').map(Number);
+
+            for (let i = 0; i < Math.max(splitV1.length, splitV2.length); i++){
+                const num1 = splitV1[i] || 0;
+                const num2 = splitV2[i] || 0;
+
+                if(num1 > num2) return true;
+                else if(num1 < num2) return false;
+            }
+            return false;
+        }
+
+        const filteredApps = Object.values(apps.reduce((accumilator, app) => {
+            if (app.num != null){
+                if(!accumilator[app.num] || isNewerVersion(app.versionName, accumilator[app.num].versionName)){
+                    accumilator[app.num] = app;
+                }
+            }
+            return accumilator;
         }, {}));
 
         return filteredApps;
@@ -235,6 +256,71 @@ async function getDbApps(){
 
     return data;
 }
+
+async function updateFindApkApps(){
+    const findApk_apps = await getFindApkApps(500);
+    findApk_apps.map(async app => {
+        await checkExistingFindApkApps(app.packageName, async (found) => {
+            if(found){
+                await updateFindApkAppData(app.packageName, app.versionName);
+            } else {
+                await addFindApkAppData(app);
+            }
+        });
+    })
+}
+
+async function checkExistingFindApkApps(packageName, callback){
+    const {data, error} = await supabase
+        .from('findapk_details')
+        .select('count')
+        .eq('package_name', packageName)
+
+    if (error) {
+        console.error('Error querying the database: ', error);
+        return;
+    }
+
+    if (data[0].count > 0){
+        console.log('App *' + packageName + '* exists');
+        callback(true);
+    } else{
+        console.log('App *' + packageName + '* DOESNT exist');
+        callback(false);
+    }
+}
+
+async function updateFindApkAppData(packageName, newVersion){
+    const { data, error } = await supabase
+        .from('findapk_details')
+        .update({version: newVersion})
+        .eq('package_name', packageName)
+
+    if(error){
+        console.error('Error update user: ',  error);
+        return;
+    }
+    console.log('App *' + packageName + '* was updated');
+}
+
+async function addFindApkAppData(app){
+    const { data , error } = await supabase
+        .from('findapk_details')
+        .insert([
+            {
+                name: app.name,
+                package_name: app.packageName,
+                version: app.versionName,
+            }
+        ]);
+
+    if(error) {
+        console.error('Database Error: ', error);
+        return;
+    }
+    console.log('App *' + app.name + '* added to database');
+}
+
 //#endregion
 
 //#region GET Requests
